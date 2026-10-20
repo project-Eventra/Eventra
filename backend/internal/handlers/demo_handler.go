@@ -71,107 +71,7 @@ func GetDemoStore() *DemoStore {
 			AcademicSession:    "2024-2028",
 		}
 
-		// Seed Clubs
-		c1ID := uuid.MustParse("11111111-1111-1111-1111-111111111111")
-		c2ID := uuid.MustParse("22222222-2222-2222-2222-222222222222")
-		c3ID := uuid.MustParse("33333333-3333-3333-3333-333333333333")
-		c4ID := uuid.MustParse("44444444-4444-4444-4444-444444444444")
-		c5ID := uuid.MustParse("55555555-5555-5555-5555-555555555555")
-
-		clubHash, _ := bcrypt.GenerateFromPassword([]byte("Club@123456"), bcrypt.DefaultCost)
-		s.users["robotics@evenrtra.edu"] = &models.User{ID: uuid.New(), Email: "robotics@evenrtra.edu", PasswordHash: string(clubHash), Role: models.RoleClubAdmin, IsActive: true}
-		s.users["ieee@evenrtra.edu"] = &models.User{ID: uuid.New(), Email: "ieee@evenrtra.edu", PasswordHash: string(clubHash), Role: models.RoleClubAdmin, IsActive: true}
-		s.users["drama@evenrtra.edu"] = &models.User{ID: uuid.New(), Email: "drama@evenrtra.edu", PasswordHash: string(clubHash), Role: models.RoleClubAdmin, IsActive: true}
-
-		d1 := "Advancing student engineering, aerial drones, and autonomous robotics."
-		d2 := "The premier technical organization hosting hackathons and research colloquiums."
-		d3 := "Celebrating theatrical productions, music, and inter-university talent festivals."
-		d4 := "Organizing varsity tournaments, soccer cups, and campus wellness programs."
-		d5 := "Cultivating parliamentary debate, public diplomacy, and leadership summits."
-
-		s.clubs[c1ID] = &models.Club{ID: c1ID, Name: "Robotics & AI Society", Category: "Technology", Description: &d1, Email: "robotics@evenrtra.edu", VerificationStatus: "approved", IsActive: true}
-		s.clubs[c2ID] = &models.Club{ID: c2ID, Name: "IEEE Student Branch", Category: "Technology", Description: &d2, Email: "ieee@evenrtra.edu", VerificationStatus: "approved", IsActive: true}
-		s.clubs[c3ID] = &models.Club{ID: c3ID, Name: "Drama & Cultural Guild", Category: "Cultural", Description: &d3, Email: "drama@evenrtra.edu", VerificationStatus: "approved", IsActive: true}
-		s.clubs[c4ID] = &models.Club{ID: c4ID, Name: "Athletics & Sports League", Category: "Sports", Description: &d4, Email: "sports@evenrtra.edu", VerificationStatus: "approved", IsActive: true}
-		s.clubs[c5ID] = &models.Club{ID: c5ID, Name: "Debating & Leadership Forum", Category: "Academic", Description: &d5, Email: "debating@evenrtra.edu", VerificationStatus: "approved", IsActive: true}
-
-		// Seed Events
-		e1ID := uuid.MustParse("a0000000-0000-0000-0000-000000000001")
-		e2ID := uuid.MustParse("a0000000-0000-0000-0000-000000000002")
-		e3ID := uuid.MustParse("a0000000-0000-0000-0000-000000000003")
-
-		venue1 := "Engineering Quad & Innovation Arena"
-		venue2 := "Science Complex Center Hall"
-		venue3 := "University Grand Amphitheater"
-		desc1 := "RoboGenesis brings together engineers and robotics teams from across the nation. Features dual arenas: Line Follower and Autonomous Drone Challenge."
-		desc2 := "HackNexus 2026 provides compute clusters, expert industry mentors from leading tech companies, and non-stop coding for 48 hours."
-		desc3 := "Symphony of Lights is our university's premier annual festival celebrating community, diversity, and artistic brilliance."
-		maxCap1 := 80
-		maxCap2 := 150
-		maxCap3 := 500
-
-		s.events[e1ID] = &models.Event{
-			ID:                   e1ID,
-			ClubID:               c1ID,
-			Name:                 "RoboGenesis 2026: Autonomous Drone & Bot Championship",
-			ClubName:             "Robotics & AI Society",
-			Category:             "Technology",
-			Venue:                &venue1,
-			Description:          &desc1,
-			EventDate:            time.Now().Add(25 * 24 * time.Hour),
-			RegistrationDeadline: time.Now().Add(20 * 24 * time.Hour),
-			MaxParticipants:      &maxCap1,
-			RegistrationCount:    28,
-			ParticipationType:    "group",
-			Status:               "active",
-		}
-
-		s.events[e2ID] = &models.Event{
-			ID:                   e2ID,
-			ClubID:               c2ID,
-			Name:                 "HackNexus: 48-Hour National AI & Cloud Hackathon",
-			ClubName:             "IEEE Student Branch",
-			Category:             "Technology",
-			Venue:                &venue2,
-			Description:          &desc2,
-			EventDate:            time.Now().Add(14 * 24 * time.Hour),
-			RegistrationDeadline: time.Now().Add(10 * 24 * time.Hour),
-			MaxParticipants:      &maxCap2,
-			RegistrationCount:    74,
-			ParticipationType:    "group",
-			Status:               "active",
-		}
-
-		s.events[e3ID] = &models.Event{
-			ID:                   e3ID,
-			ClubID:               c3ID,
-			Name:                 "Campus Cultural Fest: Symphony of Lights 2026",
-			ClubName:             "Drama & Cultural Guild",
-			Category:             "Cultural",
-			Venue:                &venue3,
-			Description:          &desc3,
-			EventDate:            time.Now().Add(30 * 24 * time.Hour),
-			RegistrationDeadline: time.Now().Add(28 * 24 * time.Hour),
-			MaxParticipants:      &maxCap3,
-			RegistrationCount:    182,
-			ParticipationType:    "individual",
-			Status:               "active",
-		}
-
-		// Seed Pass for demo student
-		rID := uuid.MustParse("b0000000-0000-0000-0000-000000000001")
-		s.registrations[rID] = &models.Registration{
-			ID:               rID,
-			EventID:          e3ID,
-			UserID:           studentID,
-			EventName:        "Campus Cultural Fest: Symphony of Lights 2026",
-			ClubName:         "Drama & Cultural Guild",
-			Venue:            venue3,
-			RegistrationType: "individual",
-			Status:           "confirmed",
-			CreatedAt:        time.Now().Add(-2 * 24 * time.Hour),
-		}
-
+		// Initial clean state: 0 clubs, 0 events, 0 registrations until registered by users
 		globalDemoStore = s
 	})
 	return globalDemoStore
@@ -187,6 +87,18 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 			"status": "ok",
 			"mode":   "local_in_memory_ready",
 			"note":   "PostgreSQL not connected locally; running in interactive demo mode",
+		})
+	})
+
+	// Public Platform Real-Time Stats
+	r.Get("/stats", func(w http.ResponseWriter, r *http.Request) {
+		store.mu.RLock()
+		defer store.mu.RUnlock()
+		writeSuccess(w, "", map[string]interface{}{
+			"total_clubs":         len(store.clubs),
+			"total_students":      len(store.students),
+			"total_events":        len(store.events),
+			"total_registrations": len(store.registrations),
 		})
 	})
 

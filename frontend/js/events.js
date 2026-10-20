@@ -169,16 +169,28 @@ async function loadEventsCatalog({ containerId, search = '', category = '', page
     }
 
     if (events.length === 0) {
+      const isFiltered = Boolean(search || category);
       container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;" class="glass-card">
-          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎪</div>
-          <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">No events match your criteria</h3>
-          <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto 1.5rem;">
-            Try selecting a different category or clearing your search term to see other upcoming campus events.
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1.5rem;" class="glass-card">
+          <div style="font-size: 3rem; margin-bottom: 0.75rem;">📅</div>
+          <h3 style="font-size: 1.4rem; margin-bottom: 0.5rem; color: #ffffff;">
+            ${isFiltered ? 'No events match your criteria' : 'No Events Scheduled Yet'}
+          </h3>
+          <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.5rem; line-height: 1.6;">
+            ${isFiltered 
+              ? 'Try selecting a different category or clearing your search term to see other events.' 
+              : 'No campus events are currently open for registration as no clubs have added events yet. Once registered university clubs publish upcoming events, they will appear here with live countdowns.'}
           </p>
-          <button class="btn btn-sm btn-glass" onclick="document.getElementById('event-search-input').value=''; loadEventsCatalog({ containerId:'${containerId}' });">
-            Reset Filters
-          </button>
+          <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+            ${isFiltered ? `
+              <button class="btn btn-sm btn-glass" onclick="document.getElementById('event-search-input').value=''; loadEventsCatalog({ containerId:'${containerId}' });">
+                Reset Filters
+              </button>
+            ` : `
+              <a href="auth.html?mode=club" class="btn btn-sm btn-primary">Register Your Club</a>
+              <a href="auth.html?mode=register" class="btn btn-sm btn-glass">Student Sign Up</a>
+            `}
+          </div>
         </div>
       `;
       return;
@@ -212,7 +224,15 @@ async function loadTimeline(containerId) {
     const items = res.data || [];
 
     if (items.length === 0) {
-      container.innerHTML = `<p style="color:var(--text-muted);">No timeline items available.</p>`;
+      container.innerHTML = `
+        <div class="glass-card" style="text-align: center; padding: 2.5rem 1.5rem;">
+          <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🗓️</div>
+          <h4 style="font-size: 1.15rem; margin-bottom: 0.35rem; color: #ffffff;">No Timeline Events Scheduled Yet</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 440px; margin: 0 auto;">
+            The university event timeline will automatically synchronize as soon as registered campus clubs publish their upcoming activities.
+          </p>
+        </div>
+      `;
       return;
     }
 

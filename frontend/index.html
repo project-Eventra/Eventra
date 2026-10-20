@@ -50,15 +50,15 @@
           <!-- Quick Metrics -->
           <div style="display: flex; gap: 2.5rem; border-top: 1px solid var(--border-subtle); padding-top: 2rem;">
             <div>
-              <div style="font-family: var(--font-heading); font-size: 1.9rem; font-weight: 800; color: var(--accent-cyan);" id="stat-clubs-hero">25+</div>
+              <div style="font-family: var(--font-heading); font-size: 1.9rem; font-weight: 800; color: var(--accent-mint);" id="stat-clubs-hero">0</div>
               <div style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Active Clubs</div>
             </div>
             <div>
-              <div style="font-family: var(--font-heading); font-size: 1.9rem; font-weight: 800; color: #d8b4fe;" id="stat-events-hero">140+</div>
-              <div style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Annual Events</div>
+              <div style="font-family: var(--font-heading); font-size: 1.9rem; font-weight: 800; color: #ffffff;" id="stat-events-hero">0</div>
+              <div style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Campus Events</div>
             </div>
             <div>
-              <div style="font-family: var(--font-heading); font-size: 1.9rem; font-weight: 800; color: var(--accent-emerald);" id="stat-students-hero">8,500+</div>
+              <div style="font-family: var(--font-heading); font-size: 1.9rem; font-weight: 800; color: var(--accent-emerald);" id="stat-students-hero">0</div>
               <div style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Student Registrations</div>
             </div>
           </div>
@@ -77,20 +77,20 @@
             <div class="core-sub">NEXUS</div>
           </div>
 
-          <!-- Orbiting Satellites (Clubs & Highlights) -->
+          <!-- Orbiting Satellites (Club Spheres & Registration) -->
           <div class="orbit-satellite" style="top: 12%; left: 8%; transform: rotate(-5deg);" onclick="window.location.href='events.html?cat=tech'">
             <div class="sat-icon" style="background: rgba(52, 211, 153, 0.2); color: var(--accent-mint); border: 1px solid rgba(52, 211, 153, 0.3);">🤖</div>
-            <span>Robotics &amp; AI</span>
+            <span>Tech &amp; AI</span>
           </div>
 
           <div class="orbit-satellite" style="bottom: 15%; left: 10%; transform: rotate(8deg);" onclick="window.location.href='events.html?cat=cultural'">
             <div class="sat-icon" style="background: rgba(255, 255, 255, 0.15); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3);">🎭</div>
-            <span>Drama &amp; Arts</span>
+            <span>Arts &amp; Culture</span>
           </div>
 
           <div class="orbit-satellite" style="top: 25%; right: 4%; transform: rotate(12deg);" onclick="window.location.href='events.html?cat=tech'">
             <div class="sat-icon" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3);">⚡</div>
-            <span>IEEE Student Branch</span>
+            <span>Engineering</span>
           </div>
 
           <div class="orbit-satellite" style="bottom: 22%; right: 6%; transform: rotate(-8deg);" onclick="window.location.href='events.html?cat=sports'">
@@ -100,12 +100,12 @@
 
           <div class="orbit-satellite" style="top: 4%; right: 28%;" onclick="window.location.href='events.html?cat=academic'">
             <div class="sat-icon" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3);">💼</div>
-            <span>Business &amp; Leadership</span>
+            <span>Debate &amp; Leadership</span>
           </div>
 
-          <div class="orbit-satellite" style="bottom: 4%; left: 32%;" onclick="window.location.href='events.html?cat=cultural'">
-            <div class="sat-icon" style="background: rgba(255, 255, 255, 0.2); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4);">🎵</div>
-            <span>Music Society</span>
+          <div class="orbit-satellite" style="bottom: 4%; left: 32%;" onclick="window.location.href='auth.html?mode=club'">
+            <div class="sat-icon" style="background: rgba(255, 255, 255, 0.2); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4);">➕</div>
+            <span>Register Your Club</span>
           </div>
         </div>
 
@@ -282,8 +282,20 @@
   <script src="js/events.js"></script>
   <script src="js/feedback.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Load 6 featured events on homepage
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Load real-time platform statistics
+      try {
+        const statsRes = await window.api.get('/stats');
+        if (statsRes && statsRes.data) {
+          document.getElementById('stat-clubs-hero').innerText = statsRes.data.total_clubs ?? 0;
+          document.getElementById('stat-events-hero').innerText = statsRes.data.total_events ?? 0;
+          document.getElementById('stat-students-hero').innerText = statsRes.data.total_registrations ?? 0;
+        }
+      } catch (e) {
+        // Fallback to 0
+      }
+
+      // Load featured events on homepage
       loadEventsCatalog({
         containerId: 'featured-events-grid',
         limit: 6
