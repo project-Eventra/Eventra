@@ -273,6 +273,144 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 			})
 		})
 
+		// Google / Gmail Sign-In & Instant Registration
+		authRouter.Post("/google", func(w http.ResponseWriter, r *http.Request) {
+			var req struct {
+				Email string `json:"email"`
+				Name  string `json:"name"`
+			}
+			if err := decodeJSON(r, &req); err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid request body")
+				return
+			}
+
+			email := strings.ToLower(strings.TrimSpace(req.Email))
+			if email == "" {
+				writeError(w, http.StatusBadRequest, "Gmail address is required")
+				return
+			}
+
+			store.mu.Lock()
+			user, exists := store.users[email]
+			if !exists {
+				// Auto-create student account with Google
+				newID := uuid.New()
+				user = &models.User{
+					ID:           newID,
+					Email:        email,
+					PasswordHash: "google_authenticated",
+					Role:         models.RoleStudent,
+					IsActive:     true,
+				}
+				store.users[email] = user
+
+				firstName := "Student"
+				lastName := ""
+				if req.Name != "" {
+					parts := strings.SplitN(strings.TrimSpace(req.Name), " ", 2)
+					firstName = parts[0]
+					if len(parts) > 1 {
+						lastName = parts[1]
+					}
+				} else {
+					firstName = strings.Split(email, "@")[0]
+				}
+
+				store.students[newID] = &models.StudentProfile{
+					UserID:             newID,
+					FirstName:          firstName,
+					LastName:           lastName,
+					RegistrationNumber: "GML-" + strings.ToUpper(newID.String()[:8]),
+					Department:         "General Studies",
+					AcademicSession:    "2024-2028",
+				}
+			}
+			store.mu.Unlock()
+
+			token, expiresAt, _ := authManager.GenerateJWT(user.ID, user.Email, user.Role)
+
+			http.SetCookie(w, &http.Cookie{
+				Name:     "evenrtra_session",
+				Value:    token,
+				Path:     "/",
+				Expires:  expiresAt,
+				HttpOnly: true,
+				SameSite: http.SameSiteLaxMode,
+			})
+
+			displayName := user.Email
+			var studentID, dept string
+			store.mu.RLock()
+			if st, ok := store.students[user.ID]; ok {
+				displayName = st.FirstName
+				if st.LastName != "" {
+					displayName += " " + st.LastName
+				}
+				studentID = st.RegistrationNumber
+				dept = st.Department
+			}
+			store.mu.RUnlock()
+
+			writeSuccess(w, "Google sign-in successful", map[string]interface{}{
+				"token": token,
+				"user": map[string]interface{}{
+					"id":         user.ID,
+					"email":      user.Email,
+					"role":       user.Role,
+					"name":       displayName,
+					"student_id": studentID,
+					"department": dept,
+				},
+			})
+		})
+
+		// Firebase endpoint alias
+		authRouter.Post("/firebase", func(w http.ResponseWriter, r *http.Request) {
+			var req struct {
+				Email string `json:"email"`
+				Name  string `json:"name"`
+			}
+			decodeJSON(r, &req)
+			if req.Email == "" {
+				req.Email = "student@gmail.com"
+			}
+			// Forward to Google auth handler logic
+			email := strings.ToLower(strings.TrimSpace(req.Email))
+			store.mu.Lock()
+			user, exists := store.users[email]
+			if !exists {
+				newID := uuid.New()
+				user = &models.User{
+					ID:           newID,
+					Email:        email,
+					PasswordHash: "google_authenticated",
+					Role:         models.RoleStudent,
+					IsActive:     true,
+				}
+				store.users[email] = user
+				store.students[newID] = &models.StudentProfile{
+					UserID:             newID,
+					FirstName:          "Google",
+					LastName:           "User",
+					RegistrationNumber: "GML-" + strings.ToUpper(newID.String()[:8]),
+					Department:         "General Studies",
+					AcademicSession:    "2024-2028",
+				}
+			}
+			store.mu.Unlock()
+
+			token, _, _ := authManager.GenerateJWT(user.ID, user.Email, user.Role)
+			writeSuccess(w, "Authenticated via Google", map[string]interface{}{
+				"token": token,
+				"user": map[string]interface{}{
+					"id":    user.ID,
+					"email": user.Email,
+					"role":  user.Role,
+					"name":  user.Email,
+				},
+			})
+		})
+
 		authRouter.Post("/register/student", func(w http.ResponseWriter, r *http.Request) {
 			var req models.StudentRegistrationRequest
 			if err := decodeJSON(r, &req); err != nil {
