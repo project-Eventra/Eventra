@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication — Evenrtra</title>
+  <meta name="description" content="Sign in or register as a student or university club on Evenrtra.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh;">
+
+  <!-- Dynamic Navigation Bar -->
+  <div id="navbar-container"></div>
+
+  <!-- Center Auth Box -->
+  <main class="section" style="flex:1; display:flex; align-items:center; justify-content:center; padding-top:8rem; padding-bottom:4rem;">
+    <div class="container" style="max-width: 520px;">
+      
+      <div class="glass-card" style="padding: 2.5rem; border-color: rgba(0, 242, 254, 0.25); box-shadow: var(--shadow-lg), 0 0 50px rgba(0,242,254,0.08);">
+        
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <div class="logo-orb" style="margin: 0 auto 1rem; width:44px; height:44px;"></div>
+          <h2 style="font-size: 1.85rem; font-weight: 800; margin-bottom: 0.35rem;" id="auth-title">Welcome Back</h2>
+          <p style="font-size: 0.92rem; color: var(--text-muted);" id="auth-subtitle">
+            Sign in to access your event registrations and club passes.
+          </p>
+        </div>
+
+        <!-- Mode Selector Tabs -->
+        <div class="tabs-nav" style="justify-content: center; margin-bottom: 2rem;">
+          <button class="tab-btn active" id="tab-login" onclick="switchMode('login')">Sign In</button>
+          <button class="tab-btn" id="tab-register" onclick="switchMode('register')">Student Sign Up</button>
+          <button class="tab-btn" id="tab-club" onclick="switchMode('club')">Club Affiliation</button>
+        </div>
+
+        <!-- Error Alert Box -->
+        <div id="auth-error-box" style="display: none; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-md); padding: 0.85rem 1.1rem; color: var(--accent-rose); font-size: 0.88rem; margin-bottom: 1.5rem;"></div>
+
+        <!-- 1. SIGN IN FORM -->
+        <form id="form-login" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Email Address <span class="required">*</span></label>
+            <input type="email" id="login-email" class="form-control" placeholder="name@university.edu" required autocomplete="email">
+          </div>
+
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+              <label class="form-label" style="margin-bottom:0;">Password <span class="required">*</span></label>
+              <a href="javascript:void(0)" onclick="handleForgotPassword()" style="font-size:0.78rem; color:var(--accent-cyan);">Forgot Password?</a>
+            </div>
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-login-submit" style="width:100%; margin-top:0.75rem;">
+            <span>Sign In to Evenrtra</span>
+          </button>
+        </form>
+
+        <!-- 2. STUDENT REGISTRATION FORM -->
+        <form id="form-register" style="display: none;" onsubmit="handleStudentRegister(event)">
+          <div class="form-group">
+            <label class="form-label">Full Name <span class="required">*</span></label>
+            <input type="text" id="reg-name" class="form-control" placeholder="Alex Morgan" required>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group">
+              <label class="form-label">Student ID <span class="required">*</span></label>
+              <input type="text" id="reg-student-id" class="form-control" placeholder="STU-2026-042" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Department <span class="required">*</span></label>
+              <input type="text" id="reg-department" class="form-control" placeholder="Computer Science" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">University Email <span class="required">*</span></label>
+            <input type="email" id="reg-email" class="form-control" placeholder="alex.morgan@university.edu" required autocomplete="email">
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group">
+              <label class="form-label">Password <span class="required">*</span></label>
+              <input type="password" id="reg-password" class="form-control" placeholder="Min 8 chars (e.g. Student@123)" minlength="8" required>
+              <p class="form-hint">At least 8 chars with uppercase, lowercase, and a number</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm Password <span class="required">*</span></label>
+              <input type="password" id="reg-confirm-password" class="form-control" placeholder="Confirm password" minlength="8" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-register-submit" style="width:100%; margin-top:0.75rem;">
+            <span>Create Student Account</span>
+          </button>
+        </form>
+
+        <!-- 3. CLUB REGISTRATION FORM -->
+        <form id="form-club" style="display: none;" onsubmit="handleClubRegister(event)">
+          <div class="form-group">
+            <label class="form-label">Club / Society Name <span class="required">*</span></label>
+            <input type="text" id="club-name" class="form-control" placeholder="Robotics & Autonomous Systems" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Category <span class="required">*</span></label>
+            <select id="club-category" class="form-control" required>
+              <option value="Technology">Technology &amp; Engineering</option>
+              <option value="Cultural">Cultural, Music &amp; Drama</option>
+              <option value="Sports">Sports &amp; Athletics</option>
+              <option value="Academic">Academic &amp; Research</option>
+              <option value="Leadership">Leadership &amp; Debating</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mission / Description <span class="required">*</span></label>
+            <textarea id="club-desc" class="form-control" placeholder="Describe your club objectives, activities, and campus scope..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Official Club Contact Email <span class="required">*</span></label>
+            <input type="email" id="club-email" class="form-control" placeholder="robotics.club@university.edu" required>
+          </div>
+
+          <div style="border-top:1px solid var(--border-subtle); padding-top:1rem; margin-top:1rem;">
+            <div style="font-size:0.85rem; font-weight:700; color:var(--accent-cyan); margin-bottom:0.75rem; text-transform:uppercase;">
+              Lead Administrator Account
+            </div>
+            <div class="form-group">
+              <label class="form-label">Admin Full Name <span class="required">*</span></label>
+              <input type="text" id="club-admin-name" class="form-control" placeholder="President / Representative Name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Admin Password <span class="required">*</span></label>
+              <input type="password" id="club-admin-password" class="form-control" placeholder="Min 8 characters" minlength="8" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-accent" id="btn-club-submit" style="width:100%; margin-top:0.75rem;">
+            <span>Submit Club Application</span>
+          </button>
+        </form>
+
+        <!-- Social / Alternative Auth Divider -->
+        <div style="display:flex; align-items:center; gap:1rem; margin:1.75rem 0 1.25rem;">
+          <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+          <span style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em;">Or continue with</span>
+          <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+        </div>
+
+        <!-- Google Firebase Sign-In Button -->
+        <button type="button" class="btn btn-glass" onclick="handleFirebaseSignIn()" style="width:100%; gap:0.75rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.7 0 3 .7 3.9 1.5l2.9-2.9C17 2 14.7 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3 0-.8.1-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15s.7 5.3 1.9 7.7l3.7-2.9z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 17.4C3.7 21.1 7.5 24 12 24z"/></svg>
+          <span>University Google Account</span>
+        </button>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="footer">
+    <div class="container footer-bottom" style="border-top:none;">
+      <div>&copy; 2026 Evenrtra. All rights reserved.</div>
+      <div style="display:flex; gap:1.5rem;">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/feedback.js"></script>
+  <script>
+    let currentMode = 'login';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get('mode');
+      if (mode === 'register' || mode === 'club' || mode === 'login') {
+        switchMode(mode);
+      }
+    });
+
+    function showError(msg) {
+      const box = document.getElementById('auth-error-box');
+      if (msg) {
+        box.innerText = msg;
+        box.style.display = 'block';
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    function switchMode(mode) {
+      currentMode = mode;
+      showError('');
+
+      const tabLogin = document.getElementById('tab-login');
+      const tabReg = document.getElementById('tab-register');
+      const tabClub = document.getElementById('tab-club');
+
+      const formLogin = document.getElementById('form-login');
+      const formReg = document.getElementById('form-register');
+      const formClub = document.getElementById('form-club');
+
+      const title = document.getElementById('auth-title');
+      const sub = document.getElementById('auth-subtitle');
+
+      tabLogin.classList.remove('active');
+      tabReg.classList.remove('active');
+      tabClub.classList.remove('active');
+
+      formLogin.style.display = 'none';
+      formReg.style.display = 'none';
+      formClub.style.display = 'none';
+
+      if (mode === 'login') {
+        tabLogin.classList.add('active');
+        formLogin.style.display = 'block';
+        title.innerText = 'Welcome Back';
+        sub.innerText = 'Sign in to access your event registrations and club passes.';
+      } else if (mode === 'register') {
+        tabReg.classList.add('active');
+        formReg.style.display = 'block';
+        title.innerText = 'Student Sign Up';
+        sub.innerText = 'Create your verified student profile to register for campus events.';
+      } else if (mode === 'club') {
+        tabClub.classList.add('active');
+        formClub.style.display = 'block';
+        title.innerText = 'Club Affiliation';
+        sub.innerText = 'Register your student society to host and coordinate events.';
+      }
+    }
+
+    function redirectByRole(role) {
+      if (role === 'club_admin') {
+        window.location.href = 'dashboard-club.html';
+      } else if (role === 'super_admin') {
+        window.location.href = 'dashboard-admin.html';
+      } else {
+        window.location.href = 'dashboard-student.html';
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      showError('');
+      const btn = document.getElementById('btn-login-submit');
+      btn.disabled = true;
+      btn.innerText = 'Signing In...';
+
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const res = await window.api.post('/auth/login', { email, password });
+        const user = res.data?.user;
+        const token = res.data?.token;
+
+        if (token) window.api.setToken(token);
+        if (user) window.api.setUser(user);
+
+        window.showToast(`Welcome back, ${user?.name || user?.email}!`, 'success');
+        setTimeout(() => redirectByRole(user?.role), 500);
+      } catch (err) {
+        showError(err.message || 'Invalid email or password.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Sign In to Evenrtra</span>';
+      }
+    }
+
+    async function handleStudentRegister(e) {
+      e.preventDefault();
+      showError('');
+
+      const name = document.getElementById('reg-name').value.trim();
+      const studentId = document.getElementById('reg-student-id').value.trim();
+      const department = document.getElementById('reg-department').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const confirmPassword = document.getElementById('reg-confirm-password').value;
+
+      if (password !== confirmPassword) {
+        showError('Passwords do not match. Please re-enter.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-register-submit');
+      btn.disabled = true;
+      btn.innerText = 'Creating Account...';
+
+      const parts = name.split(' ');
+      const firstName = parts[0] || name;
+      const lastName = parts.slice(1).join(' ') || firstName;
+
+      try {
+        const res = await window.api.post('/auth/register/student', {
+          first_name: firstName,
+          last_name: lastName,
+          name: name,
+          registration_number: studentId,
+          student_id: studentId,
+          department: department,
+          email: email,
+          password: password
+        });
+
+        const user = res.data?.user;
+        const token = res.data?.token;
+
+        if (token) window.api.setToken(token);
+        if (user) window.api.setUser(user);
+
+        window.showToast('Student account created successfully!', 'success');
+        setTimeout(() => redirectByRole('student'), 500);
+      } catch (err) {
+        showError(err.message || 'Registration failed.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Create Student Account</span>';
+      }
+    }
+
+    async function handleClubRegister(e) {
+      e.preventDefault();
+      showError('');
+
+      const clubName = document.getElementById('club-name').value.trim();
+      const category = document.getElementById('club-category').value;
+      const description = document.getElementById('club-desc').value.trim();
+      const contactEmail = document.getElementById('club-email').value.trim();
+      const adminName = document.getElementById('club-admin-name').value.trim();
+      const adminPassword = document.getElementById('club-admin-password').value;
+
+      const btn = document.getElementById('btn-club-submit');
+      btn.disabled = true;
+      btn.innerText = 'Submitting Application...';
+
+      try {
+        const res = await window.api.post('/auth/register/club', {
+          club_name: clubName,
+          name: clubName,
+          category: category,
+          club_description: description,
+          description: description,
+          email: contactEmail,
+          contact_email: contactEmail,
+          password: adminPassword,
+          admin_name: adminName,
+          admin_password: adminPassword
+        });
+
+        const user = res.data?.user;
+        const token = res.data?.token;
+
+        if (token) window.api.setToken(token);
+        if (user) window.api.setUser(user);
+
+        window.showToast('Club application submitted! Welcome to Evenrtra.', 'success');
+        setTimeout(() => redirectByRole('club_admin'), 600);
+      } catch (err) {
+        showError(err.message || 'Club registration failed.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Submit Club Application</span>';
+      }
+    }
+
+    async function handleFirebaseSignIn() {
+      // Direct demo sign in or trigger Firebase Auth popup
+      window.showToast('Connecting to University Google Identity Provider...', 'info');
+      // If Firebase project ID is active, will verify token via /api/v1/auth/firebase
+      // Otherwise provide instant hint
+      setTimeout(() => {
+        showError('Google SSO requires FIREBASE_PROJECT_ID configuration. You can also sign in directly using email and password.');
+      }, 1000);
+    }
+
+    async function handleForgotPassword() {
+      const email = prompt('Enter your registered email address to receive password reset instructions:');
+      if (email) {
+        try {
+          await window.api.post('/auth/forgot-password', { email });
+          window.showToast('Password reset link sent if account exists.', 'info');
+        } catch {
+          window.showToast('Password reset instructions processed.', 'info');
+        }
+      }
+    }
+  </script>
+</body>
+</html>

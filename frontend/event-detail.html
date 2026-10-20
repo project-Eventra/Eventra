@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Details — Evenrtra</title>
+  <meta name="description" content="View event schedule, registration requirements, and reserve your spot on Evenrtra.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <!-- Dynamic Navigation Bar -->
+  <div id="navbar-container"></div>
+
+  <!-- Main Container -->
+  <main class="section" style="padding-top: 7.5rem; min-height: 85vh;">
+    <div class="container">
+      
+      <!-- Back Navigation -->
+      <div style="margin-bottom: 1.5rem;">
+        <a href="events.html" class="btn btn-sm btn-glass" style="display:inline-flex; align-items:center; gap:0.4rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
+          <span>Back to All Events</span>
+        </a>
+      </div>
+
+      <!-- Loading Placeholder -->
+      <div id="event-loading" style="text-align: center; padding: 5rem 0;">
+        <div style="width: 45px; height: 45px; border: 3px solid rgba(0, 242, 254, 0.2); border-top-color: var(--accent-cyan); border-radius: 50%; animation: rotateRing 1s linear infinite; margin: 0 auto 1.5rem;"></div>
+        <p style="color:var(--text-muted);">Loading event details...</p>
+      </div>
+
+      <!-- Main Event Content (Initially Hidden) -->
+      <div id="event-content" style="display: none;">
+        
+        <!-- Hero Banner -->
+        <div style="position: relative; height: 380px; border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 2.5rem; border: 1px solid var(--border-glass);">
+          <img id="detail-banner" src="" alt="Event Banner" style="width: 100%; height: 100%; object-fit: cover;">
+          <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,9,19,0.2) 0%, rgba(7,9,19,0.92) 100%);"></div>
+          
+          <div style="position: absolute; bottom: 2rem; left: 2rem; right: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+              <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem;">
+                <span id="detail-category-badge" class="badge badge-purple">Category</span>
+                <span id="detail-type-badge" class="badge badge-cyan">Individual</span>
+                <span id="detail-status-badge" class="badge badge-emerald">Open</span>
+              </div>
+              <h1 id="detail-title" style="font-size: 2.5rem; font-weight: 800; line-height: 1.15; margin-bottom: 0.5rem;">Event Title</h1>
+              <div style="font-size: 1.05rem; color: var(--accent-cyan); font-weight: 600;" id="detail-club-name">Host Club</div>
+            </div>
+
+            <!-- Spots Counter -->
+            <div class="glass-card" style="padding: 1rem 1.5rem; min-width: 220px; background: rgba(10, 14, 30, 0.85);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.4rem;">
+                <span style="color: var(--text-dim);">Spots Reserved</span>
+                <span id="detail-capacity-text" style="color: var(--text-main); font-family: var(--font-mono);">0 / 0</span>
+              </div>
+              <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: var(--radius-full); overflow: hidden;">
+                <div id="detail-capacity-bar" style="width: 0%; height: 100%; background: var(--grad-primary); border-radius: var(--radius-full); transition: width 0.5s ease;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div style="display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 2.5rem; align-items: start;">
+          
+          <!-- Left Column: Details & Description -->
+          <div>
+            <!-- Countdown Ticker Box -->
+            <div class="glass-card" style="margin-bottom: 2rem; border-color: rgba(0, 242, 254, 0.25);">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); font-weight: 700;">Registration Closes In</div>
+                  <div id="detail-countdown" style="font-family: var(--font-mono); font-size: 1.6rem; font-weight: 800; color: var(--accent-cyan); margin-top: 0.2rem;">
+                    Calculating...
+                  </div>
+                </div>
+                <div id="detail-deadline-date" style="font-size: 0.85rem; color: var(--text-muted); text-align: right;">
+                  Deadline: <br><strong style="color: var(--text-main);" id="detail-deadline-str">-</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="glass-card" style="margin-bottom: 2rem;">
+              <h3 style="font-size: 1.35rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">About This Event</h3>
+              <div id="detail-description" style="color: var(--text-muted); line-height: 1.8; font-size: 1rem; white-space: pre-line;">
+                Event description here...
+              </div>
+            </div>
+
+            <!-- Event Schedule & Venue -->
+            <div class="glass-card" style="margin-bottom: 2rem;">
+              <h3 style="font-size: 1.35rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">Time &amp; Location</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Start Date &amp; Time</div>
+                  <div id="detail-start-time" style="font-weight: 600; color: var(--text-main);">-</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">End Date &amp; Time</div>
+                  <div id="detail-end-time" style="font-weight: 600; color: var(--text-main);">-</div>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                  <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Venue</div>
+                  <div id="detail-venue" style="font-weight: 600; color: var(--text-main);">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Registration Card -->
+          <div id="register">
+            <div class="glass-card" style="position: sticky; top: calc(var(--nav-height) + 1.5rem); border-color: rgba(0, 242, 254, 0.3); box-shadow: 0 10px 40px rgba(0,0,0,0.6);">
+              <h3 style="font-size: 1.35rem; margin-bottom: 0.5rem;" id="reg-card-title">Event Registration</h3>
+              <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem;" id="reg-card-desc">
+                Secure your participant pass for this event.
+              </p>
+
+              <!-- State A: Already Registered -->
+              <div id="reg-state-registered" style="display: none; text-align: center; padding: 2rem 1rem;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem;">
+                  ✓
+                </div>
+                <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem;">You Are Registered!</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                  Your pass has been generated. View your digital ticket and QR code in your student portal.
+                </p>
+                <a href="dashboard-student.html" class="btn btn-primary" style="width: 100%;">Go to Student Portal</a>
+              </div>
+
+              <!-- State B: Deadline Passed -->
+              <div id="reg-state-expired" style="display: none; text-align: center; padding: 2rem 1rem;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⏳</div>
+                <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--accent-rose);">Registration Closed</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">
+                  The registration deadline for this event has elapsed. Stay tuned for future editions!
+                </p>
+              </div>
+
+              <!-- State C: Not Logged In -->
+              <div id="reg-state-guest" style="display: none; text-align: center; padding: 2rem 1rem;">
+                <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🎓</div>
+                <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Student Sign-In Required</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                  Please sign in or create an account with your university student ID to register for this event.
+                </p>
+                <a href="auth.html?mode=login" class="btn btn-primary" style="width: 100%; margin-bottom: 0.75rem;">Sign In</a>
+                <a href="auth.html?mode=register" class="btn btn-glass" style="width: 100%;">Create Student Account</a>
+              </div>
+
+              <!-- State D: Active Registration Form -->
+              <form id="reg-active-form" style="display: none;" onsubmit="handleRegistrationSubmit(event)">
+                
+                <!-- Dynamic Custom Fields Container -->
+                <div id="custom-fields-container"></div>
+
+                <!-- Group Registration Section (if type === 'group') -->
+                <div id="group-reg-section" style="display: none; border-top: 1px solid var(--border-subtle); padding-top: 1rem; margin-top: 1rem;">
+                  <div class="form-group">
+                    <label class="form-label">Team Name <span class="required">*</span></label>
+                    <input type="text" id="reg-team-name" class="form-control" placeholder="e.g. CyberKnights">
+                  </div>
+
+                  <label class="form-label">Teammate Student IDs / Emails</label>
+                  <p class="form-hint" style="margin-bottom: 0.75rem;">Add up to 4 teammate identifiers:</p>
+                  
+                  <div id="teammates-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <input type="text" class="form-control teammate-input" placeholder="Teammate 1 (Student ID or Email)">
+                  </div>
+
+                  <button type="button" class="btn btn-sm btn-glass" onclick="addTeammateField()">+ Add Another Teammate</button>
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                  <button type="submit" class="btn btn-primary" id="reg-submit-btn" style="width: 100%;">
+                    <span>Confirm Registration</span>
+                  </button>
+                  <p style="font-size: 0.75rem; color: var(--text-dim); text-align: center; margin-top: 0.75rem;">
+                    By registering you agree to the university club event attendance guidelines.
+                  </p>
+                </div>
+              </form>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="footer">
+    <div class="container footer-bottom" style="border-top:none;">
+      <div>&copy; 2026 Evenrtra. All rights reserved.</div>
+      <div style="display:flex; gap:1.5rem;">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        <a href="javascript:void(0)" onclick="openFeedbackModal()">Feedback</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/feedback.js"></script>
+  <script>
+    let currentEvent = null;
+    let countdownInterval = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const eventId = params.get('id');
+
+      if (!eventId) {
+        window.location.href = 'events.html';
+        return;
+      }
+
+      await loadEventDetail(eventId);
+    });
+
+    async function loadEventDetail(eventId) {
+      try {
+        const res = await window.api.get(`/events/${eventId}`);
+        currentEvent = res.data;
+
+        if (!currentEvent) {
+          throw new Error('Event not found');
+        }
+
+        renderEvent();
+      } catch (err) {
+        document.getElementById('event-loading').innerHTML = `
+          <div class="glass-card" style="max-width: 500px; margin: 0 auto; padding: 2.5rem; text-align: center;">
+            <p style="color: var(--accent-rose); margin-bottom: 1.5rem;">${err.message || 'Unable to load event.'}</p>
+            <a href="events.html" class="btn btn-glass">Back to Events</a>
+          </div>
+        `;
+      }
+    }
+
+    function renderEvent() {
+      document.getElementById('event-loading').style.display = 'none';
+      document.getElementById('event-content').style.display = 'block';
+
+      // Set Title & Banner
+      const title = currentEvent.title || currentEvent.name || 'Campus Event';
+      const participationType = currentEvent.registration_type || currentEvent.participation_type || 'individual';
+      document.title = `${title} — Evenrtra`;
+      document.getElementById('detail-title').innerText = title;
+      document.getElementById('detail-club-name').innerText = currentEvent.club_name || 'University Club';
+      document.getElementById('detail-category-badge').innerText = currentEvent.category || 'General';
+      document.getElementById('detail-type-badge').innerText = participationType === 'group' ? 'Team Event' : 'Individual';
+      
+      const defaultBanner = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80';
+      document.getElementById('detail-banner').src = currentEvent.banner_url || defaultBanner;
+
+      // Description & Details
+      document.getElementById('detail-description').innerText = currentEvent.description || currentEvent.short_description || 'No description provided.';
+      document.getElementById('detail-venue').innerText = currentEvent.venue || 'Campus Auditorium';
+
+      const rawStart = currentEvent.start_time || currentEvent.event_date || new Date();
+      const rawEnd = currentEvent.end_time || currentEvent.event_date || new Date();
+      const startDate = new Date(rawStart);
+      const endDate = new Date(rawEnd);
+      document.getElementById('detail-start-time').innerText = startDate.toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+      document.getElementById('detail-end-time').innerText = endDate.toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+
+      // Deadline String
+      const deadline = new Date(currentEvent.registration_deadline || new Date());
+      document.getElementById('detail-deadline-str').innerText = deadline.toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+
+      // Capacity Bar
+      const capacity = currentEvent.max_capacity || currentEvent.max_participants || 100;
+      const current = currentEvent.current_registrations || currentEvent.registration_count || 0;
+      const pct = Math.min(100, Math.round((current / capacity) * 100));
+      document.getElementById('detail-capacity-text').innerText = `${current} / ${capacity} (${pct}%)`;
+      document.getElementById('detail-capacity-bar').style.width = `${pct}%`;
+
+      // Setup Live Countdown
+      updateCountdown(deadline);
+      countdownInterval = setInterval(() => updateCountdown(deadline), 1000);
+
+      // Determine Registration Card State
+      setupRegistrationCard();
+    }
+
+    function updateCountdown(deadline) {
+      const ticker = document.getElementById('detail-countdown');
+      const now = new Date().getTime();
+      const distance = deadline.getTime() - now;
+
+      if (distance <= 0) {
+        ticker.innerText = 'Registration Closed';
+        ticker.style.color = 'var(--accent-rose)';
+        clearInterval(countdownInterval);
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      ticker.innerText = `${days}d : ${hours}h : ${minutes}m : ${seconds}s`;
+    }
+
+    function setupRegistrationCard() {
+      const user = window.api.getUser();
+      const isExpired = new Date(currentEvent.registration_deadline) <= new Date();
+
+      const registeredBox = document.getElementById('reg-state-registered');
+      const expiredBox = document.getElementById('reg-state-expired');
+      const guestBox = document.getElementById('reg-state-guest');
+      const activeForm = document.getElementById('reg-active-form');
+
+      registeredBox.style.display = 'none';
+      expiredBox.style.display = 'none';
+      guestBox.style.display = 'none';
+      activeForm.style.display = 'none';
+
+      if (currentEvent.is_registered) {
+        registeredBox.style.display = 'block';
+        return;
+      }
+
+      if (isExpired) {
+        expiredBox.style.display = 'block';
+        return;
+      }
+
+      if (!user) {
+        guestBox.style.display = 'block';
+        return;
+      }
+
+      // User is logged in and registration is open!
+      activeForm.style.display = 'block';
+
+      // Setup Custom Fields
+      const fieldsContainer = document.getElementById('custom-fields-container');
+      fieldsContainer.innerHTML = '';
+      if (Array.isArray(currentEvent.custom_fields) && currentEvent.custom_fields.length > 0) {
+        currentEvent.custom_fields.forEach(field => {
+          const div = document.createElement('div');
+          div.className = 'form-group';
+          div.innerHTML = `
+            <label class="form-label">${escapeHtml(field.label || field.name)} ${field.required ? '<span class="required">*</span>' : ''}</label>
+            <input type="${field.type || 'text'}" class="form-control custom-field-input" data-field-name="${escapeHtml(field.name)}" placeholder="${escapeHtml(field.placeholder || '')}" ${field.required ? 'required' : ''}>
+          `;
+          fieldsContainer.appendChild(div);
+        });
+      }
+
+      // Setup Group vs Individual
+      const groupSection = document.getElementById('group-reg-section');
+      if (currentEvent.registration_type === 'group') {
+        groupSection.style.display = 'block';
+      } else {
+        groupSection.style.display = 'none';
+      }
+    }
+
+    function addTeammateField() {
+      const list = document.getElementById('teammates-list');
+      const count = list.querySelectorAll('.teammate-input').length + 1;
+      if (count > 5) {
+        window.showToast('Maximum 5 teammates allowed', 'info');
+        return;
+      }
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'form-control teammate-input';
+      input.placeholder = `Teammate ${count} (Student ID or Email)`;
+      list.appendChild(input);
+    }
+
+    async function handleRegistrationSubmit(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('reg-submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Registering...';
+
+      // Gather custom fields
+      const customData = {};
+      const inputs = document.querySelectorAll('.custom-field-input');
+      inputs.forEach(inp => {
+        const name = inp.getAttribute('data-field-name');
+        customData[name] = inp.value.trim();
+      });
+
+      try {
+        if (currentEvent.registration_type === 'group') {
+          const teamName = document.getElementById('reg-team-name').value.trim();
+          if (!teamName) {
+            throw new Error('Please enter a team name');
+          }
+
+          const memberInputs = document.querySelectorAll('.teammate-input');
+          const members = [];
+          memberInputs.forEach(inp => {
+            const v = inp.value.trim();
+            if (v) members.push(v);
+          });
+
+          await window.api.post(`/events/${currentEvent.id}/register-group`, {
+            team_name: teamName,
+            members: members,
+            custom_data: customData
+          });
+        } else {
+          await window.api.post(`/events/${currentEvent.id}/register`, {
+            custom_data: customData
+          });
+        }
+
+        window.showToast('Registration successful! Your pass is confirmed.', 'success');
+        currentEvent.is_registered = true;
+        setupRegistrationCard();
+      } catch (err) {
+        window.showToast(err.message || 'Registration failed', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Confirm Registration</span>';
+      }
+    }
+  </script>
+</body>
+</html>

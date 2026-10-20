@@ -1,0 +1,282 @@
+/* ===================================================================
+   EVENRTRA - Orbit & Nebula Animations
+   "All clubs/events revolving around one platform"
+   Theme: Dark Green Obsidian & Crisp White Layer
+   =================================================================== */
+
+/* Central Revolving Orbit System */
+.orbit-stage {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  height: 500px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Center Evenrtra Core Sun/Portal */
+.orbit-core {
+  width: 126px;
+  height: 126px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0%, #a7f3d0 25%, #34d399 50%, #059669 80%, #064e3b 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 45px rgba(52, 211, 153, 0.7),
+    0 0 85px rgba(16, 185, 129, 0.4),
+    0 0 20px rgba(255, 255, 255, 0.6),
+    inset 0 0 20px #ffffff;
+  position: relative;
+  z-index: 10;
+  animation: corePulse 4s ease-in-out infinite;
+  text-align: center;
+  cursor: pointer;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+}
+
+.orbit-core .core-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #05140d;
+  letter-spacing: -0.02em;
+}
+
+.orbit-core .core-sub {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #064e3b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.95;
+}
+
+@keyframes corePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 35px rgba(52, 211, 153, 0.5),
+      0 0 70px rgba(16, 185, 129, 0.35),
+      0 0 15px rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow:
+      0 0 60px rgba(52, 211, 153, 0.85),
+      0 0 110px rgba(16, 185, 129, 0.6),
+      0 0 30px rgba(255, 255, 255, 0.7);
+  }
+}
+
+/* Rings */
+.orbit-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.orbit-ring.ring-1 {
+  width: 250px;
+  height: 250px;
+  border-color: rgba(255, 255, 255, 0.28);
+  animation: rotateRing 26s linear infinite;
+}
+
+.orbit-ring.ring-2 {
+  width: 380px;
+  height: 380px;
+  border-style: solid;
+  border-color: rgba(52, 211, 153, 0.3);
+  box-shadow: inset 0 0 20px rgba(52, 211, 153, 0.05);
+  animation: rotateRingRev 38s linear infinite;
+}
+
+.orbit-ring.ring-3 {
+  width: 490px;
+  height: 490px;
+  border-style: dotted;
+  border-color: rgba(255, 255, 255, 0.18);
+  animation: rotateRing 52s linear infinite;
+}
+
+@keyframes rotateRing {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes rotateRingRev {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+/* Satellites / Orbiting Club & Event Badges */
+.orbit-satellite {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.95rem;
+  background: rgba(12, 33, 23, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius-full);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.orbit-satellite:hover {
+  transform: scale(1.15) !important;
+  border-color: #ffffff;
+  box-shadow: 0 0 25px rgba(52, 211, 153, 0.6), 0 0 15px rgba(255, 255, 255, 0.4);
+  z-index: 20;
+}
+
+.orbit-satellite .sat-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Float Variations */
+.float-subtle {
+  animation: floatSubtle 6s ease-in-out infinite;
+}
+
+@keyframes floatSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Glowing Border Sweep */
+.border-glow-sweep {
+  position: relative;
+}
+
+.border-glow-sweep::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, #ffffff, var(--accent-mint), transparent);
+  background-size: 200% 100%;
+  animation: glowSweep 3s linear infinite;
+  z-index: -1;
+  opacity: 0.6;
+}
+
+@keyframes glowSweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Countdown Ticker Box */
+.countdown-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(12, 33, 23, 0.9);
+  border: 1px solid var(--border-white-layer);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  min-width: 48px;
+}
+
+.countdown-value {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent-mint);
+  line-height: 1.1;
+}
+
+.countdown-label {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.15rem;
+}
+
+/* Timeline Vertical Line & Pulse Node */
+.timeline-track {
+  position: relative;
+  padding-left: 2.5rem;
+}
+
+.timeline-track::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 11px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent-mint) 0%, rgba(255, 255, 255, 0.35) 60%, transparent 100%);
+}
+
+.timeline-node {
+  position: relative;
+  margin-bottom: 2.25rem;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -2.5rem;
+  top: 0.3rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  border: 2px solid var(--accent-mint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.5), 0 0 6px rgba(255, 255, 255, 0.4);
+}
+
+.timeline-dot::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+/* Shimmer Loading Skeleton */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

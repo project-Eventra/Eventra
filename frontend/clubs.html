@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University Clubs — Evenrtra</title>
+  <meta name="description" content="Explore certified student societies and university clubs registered on Evenrtra.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <!-- Dynamic Navigation Bar -->
+  <div id="navbar-container"></div>
+
+  <!-- Main Section -->
+  <main class="section" style="padding-top: 7.5rem; min-height: 85vh;">
+    <div class="container">
+      
+      <!-- Page Header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1.5rem;">
+        <div>
+          <div class="section-badge">Student Societies</div>
+          <h1 style="font-size: 2.75rem; margin-bottom: 0.75rem;">University Clubs</h1>
+          <p style="font-size: 1.1rem; color: var(--text-muted); max-width: 600px;">
+            The central revolving orbit of student activities, competitions, networking, and leadership bodies.
+          </p>
+        </div>
+        <div>
+          <a href="auth.html?mode=club" class="btn btn-primary">
+            <span>Register Your Club</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2.5rem;">
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+          <div style="flex: 1; min-width: 280px; position: relative;">
+            <input 
+              type="text" 
+              id="club-search-input" 
+              class="form-control" 
+              placeholder="Search club by name, keywords, or focus..." 
+              style="padding-left: 2.75rem;"
+            >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;" id="club-category-pills">
+            <button class="btn btn-sm btn-primary club-cat-btn" data-cat="">All Clubs</button>
+            <button class="btn btn-sm btn-glass club-cat-btn" data-cat="Technology">Technology</button>
+            <button class="btn btn-sm btn-glass club-cat-btn" data-cat="Cultural">Cultural</button>
+            <button class="btn btn-sm btn-glass club-cat-btn" data-cat="Sports">Sports</button>
+            <button class="btn btn-sm btn-glass club-cat-btn" data-cat="Academic">Academic</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clubs Grid -->
+      <div id="clubs-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.75rem;">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 0;">
+          <div style="width: 40px; height: 40px; border: 3px solid rgba(0, 242, 254, 0.2); border-top-color: var(--accent-cyan); border-radius: 50%; animation: rotateRing 1s linear infinite; margin: 0 auto 1rem;"></div>
+          <p>Discovering university clubs...</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="footer">
+    <div class="container footer-bottom" style="border-top:none;">
+      <div>&copy; 2026 Evenrtra. All rights reserved.</div>
+      <div style="display:flex; gap:1.5rem;">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        <a href="javascript:void(0)" onclick="openFeedbackModal()">Feedback</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/feedback.js"></script>
+  <script>
+    let allClubs = [];
+    let currentFilter = '';
+    let currentQuery = '';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadClubs();
+
+      // Search listener
+      const searchInput = document.getElementById('club-search-input');
+      searchInput.addEventListener('input', (e) => {
+        currentQuery = e.target.value.toLowerCase().trim();
+        renderClubs();
+      });
+
+      // Category buttons
+      const catBtns = document.querySelectorAll('.club-cat-btn');
+      catBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          catBtns.forEach(b => b.className = 'btn btn-sm btn-glass club-cat-btn');
+          btn.className = 'btn btn-sm btn-primary club-cat-btn';
+          currentFilter = btn.getAttribute('data-cat');
+          renderClubs();
+        });
+      });
+    });
+
+    async function loadClubs() {
+      const container = document.getElementById('clubs-grid');
+      try {
+        const res = await window.api.get('/clubs');
+        allClubs = res.data || [];
+        renderClubs();
+      } catch (err) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;" class="glass-card">
+            <p style="color: var(--accent-rose); margin-bottom: 1rem;">Could not load clubs: ${err.message}</p>
+            <button class="btn btn-sm btn-glass" onclick="loadClubs()">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    function renderClubs() {
+      const container = document.getElementById('clubs-grid');
+      let filtered = allClubs.filter(club => {
+        const matchesCat = !currentFilter || (club.category || '').toLowerCase() === currentFilter.toLowerCase();
+        const matchesQuery = !currentQuery || 
+          (club.name || '').toLowerCase().includes(currentQuery) || 
+          (club.description || '').toLowerCase().includes(currentQuery);
+        return matchesCat && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;" class="glass-card">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏛️</div>
+            <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">No clubs found</h3>
+            <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto 1.5rem;">
+              No certified clubs match your filter criteria. Be the first to register a chapter!
+            </p>
+            <a href="auth.html?mode=club" class="btn btn-sm btn-primary">Register Your Club</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(club => {
+        const logoUrl = club.logo_url || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&auto=format&fit=crop&q=80';
+        return `
+          <div class="glass-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.25rem;">
+                <img src="${logoUrl}" alt="${escapeHtml(club.name)}" style="width:54px; height:54px; border-radius:var(--radius-md); object-fit:cover; border:1px solid var(--border-glass);">
+                <div>
+                  <h3 style="font-size:1.2rem; margin-bottom:0.25rem;">${escapeHtml(club.name)}</h3>
+                  <span class="badge badge-purple">${escapeHtml(club.category || 'General')}</span>
+                </div>
+              </div>
+
+              <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.5rem; min-height:4.2rem;">
+                ${escapeHtml(club.description || 'Dedicated to advancing student initiatives and fostering collaboration.')}
+              </p>
+            </div>
+
+            <div style="border-top:1px solid var(--border-subtle); padding-top:1rem; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.8rem; color:var(--text-dim);">
+                ✉️ ${escapeHtml(club.contact_email || 'info@university.edu')}
+              </span>
+              <a href="events.html?club=${club.id}" class="btn btn-sm btn-glass">Events</a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

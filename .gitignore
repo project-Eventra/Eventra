@@ -1,0 +1,38 @@
+# Environment and secrets
+.env
+*.env.local
+firebase-service-account.json
+firebase-adminsdk*.json
+
+# Go
+backend/bin/
+backend/tmp/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# Frontend
+frontend/node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Database
+*.sql.bak
