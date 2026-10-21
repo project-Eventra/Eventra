@@ -45,7 +45,7 @@
   font-weight: 800;
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(76, 5, 25, 0.4);
-  border: 1px solid #ebb328;
+  border: 1px solid #38bdf8;
 }
 
 .sidebar-user-name {
@@ -91,7 +91,7 @@
 .sidebar-item.active {
   color: #ffffff;
   background: #4c0519;
-  border-color: #ebb328;
+  border-color: #38bdf8;
   box-shadow: 0 4px 12px rgba(76, 5, 25, 0.35);
 }
 
@@ -370,7 +370,7 @@
 
 .tab-btn.active {
   color: #4c0519;
-  border-bottom-color: #ebb328;
+  border-bottom-color: #38bdf8;
   font-weight: 700;
 }
 

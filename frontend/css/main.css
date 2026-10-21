@@ -1,7 +1,7 @@
 /* ===================================================================
    EVENTRA - Campus Life & Event Platform
    Font: Inter / Roboto Typography
-   Palette: Deep Burgundy (#4c0519), Golden Amber (#ebb328),
+   Palette: Deep Burgundy (#4c0519), Electric Cyan (#38bdf8),
             Warm Sand (#f5ede2), Crisp White & Obsidian
    =================================================================== */
 
@@ -29,10 +29,10 @@
   --accent-brown-hover: #370311;
   --border-brown: #600821;
 
-  /* Golden Amber (Signature Secondary) */
-  --bg-gold: #ebb328;
-  --bg-gold-hover: #d99f18;
-  --accent-amber: #ebb328;
+  /* Electric Cyan (Signature Secondary) */
+  --bg-gold: #38bdf8;
+  --bg-gold-hover: #0ea5e9;
+  --accent-amber: #38bdf8;
 
   /* Warm Sand Tag Accent */
   --bg-sand: #f5ede2;
@@ -51,7 +51,7 @@
 
   /* Gradients */
   --grad-primary: linear-gradient(135deg, #4c0519 0%, #600821 100%);
-  --grad-accent: linear-gradient(135deg, #370311 0%, #4c0519 50%, #ebb328 100%);
+  --grad-accent: linear-gradient(135deg, #370311 0%, #4c0519 50%, #38bdf8 100%);
   --grad-white: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
   --grad-dark: linear-gradient(180deg, #090e17 0%, #030712 100%);
 
@@ -294,7 +294,7 @@ p {
   right: 0;
   height: var(--nav-height);
   background: #ffffff;
-  border-bottom: 3px solid #ebb328;
+  border-bottom: 2px solid #38bdf8;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
   z-index: 1000;
   display: flex;
@@ -342,13 +342,13 @@ p {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #ebb328;
+  background: #38bdf8;
 }
 
 .brand-tag {
   font-size: 0.68rem;
-  color: #0f172a;
-  background: #ebb328;
+  color: #080d1a;
+  background: #38bdf8;
   padding: 0.2rem 0.55rem;
   border-radius: var(--radius-full);
   margin-left: 0.4rem;
@@ -413,17 +413,17 @@ p {
 }
 
 .btn-primary {
-  background: #ebb328;
-  color: #0f172a !important;
-  border: 1px solid #d99f18;
-  box-shadow: 0 4px 14px rgba(235, 179, 40, 0.25);
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  color: #ffffff !important;
+  border: 1px solid #38bdf8;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
   font-weight: 700;
 }
 
 .btn-primary:hover {
-  background: #d99f18;
-  color: #0f172a !important;
-  box-shadow: 0 6px 20px rgba(235, 179, 40, 0.38);
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+  color: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
   transform: translateY(-2px);
 }
 
@@ -613,8 +613,8 @@ textarea.form-control {
 }
 
 .badge-amber {
-  background-color: #ebb328 !important;
-  color: #0f172a !important;
+  background-color: #38bdf8 !important;
+  color: #080d1a !important;
   font-weight: 700;
 }
 
@@ -722,7 +722,7 @@ textarea.form-control {
 /* Footer - Deep Burgundy with Golden Amber Border */
 .footer {
   background: #4c0519;
-  border-top: 3px solid #ebb328;
+  border-top: 2px solid #38bdf8;
   padding: 4.5rem 0 2.5rem;
   position: relative;
   z-index: 1;
@@ -848,7 +848,7 @@ body.page-dark strong {
 
 body.page-dark .navbar {
   background: #080d1a;
-  border-bottom: 3px solid #ebb328;
+  border-bottom: 2px solid #38bdf8;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
 }
 
@@ -908,7 +908,7 @@ body.page-dark .timeline-card {
 }
 
 body.page-dark .orbit-ring {
-  border-color: rgba(235, 179, 40, 0.2);
+  border-color: rgba(56, 189, 248, 0.2);
 }
 
 body.page-dark .orbit-ring.ring-1 {
@@ -916,7 +916,7 @@ body.page-dark .orbit-ring.ring-1 {
 }
 
 body.page-dark .orbit-ring.ring-2 {
-  border-color: rgba(235, 179, 40, 0.35);
+  border-color: rgba(56, 189, 248, 0.35);
 }
 
 body.page-dark .orbit-ring.ring-3 {

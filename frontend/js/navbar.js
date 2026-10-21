@@ -56,7 +56,6 @@ function initNavbar() {
         <a href="index.html" class="brand-logo">
           <div class="logo-orb"></div>
           <span>Eventra</span>
-          <span class="brand-tag">v1.0</span>
         </a>
 
         <ul class="nav-links">

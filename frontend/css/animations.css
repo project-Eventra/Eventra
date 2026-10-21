@@ -23,7 +23,7 @@
   width: 360px;
   height: 360px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(235, 179, 40, 0.10) 0%, rgba(76, 5, 25, 0.06) 50%, transparent 75%);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.10) 0%, rgba(76, 5, 25, 0.06) 50%, transparent 75%);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -37,27 +37,27 @@
   50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
 }
 
-/* Center Eventra Core Sun/Portal */
+/* Center Eventra Core Portal */
 .orbit-core {
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 38%, #ffffff 0%, #fef3c7 18%, #ebb328 48%, #b8860b 72%, #4c0519 100%);
+  background: radial-gradient(circle at 40% 38%, #ffffff 0%, #e0f2fe 18%, #38bdf8 50%, #0284c7 75%, #1e1b4b 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 0 20px rgba(235, 179, 40, 0.5),
-    0 0 50px rgba(235, 179, 40, 0.25),
-    0 0 90px rgba(76, 5, 25, 0.3),
-    inset 0 -4px 14px rgba(76, 5, 25, 0.4);
+    0 0 24px rgba(56, 189, 248, 0.5),
+    0 0 60px rgba(56, 189, 248, 0.3),
+    0 0 100px rgba(2, 132, 199, 0.25),
+    inset 0 -4px 14px rgba(30, 27, 75, 0.4);
   position: relative;
   z-index: 10;
   animation: corePulse 5s ease-in-out infinite;
   text-align: center;
   cursor: pointer;
-  border: 3px solid rgba(255, 255, 255, 0.85);
+  border: 3px solid rgba(255, 255, 255, 0.9);
 }
 
 /* Inner highlight ring on core */
@@ -66,7 +66,7 @@
   position: absolute;
   inset: -10px;
   border-radius: 50%;
-  border: 1.5px solid rgba(235, 179, 40, 0.3);
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
   animation: coreHaloSpin 12s linear infinite;
   pointer-events: none;
 }
@@ -88,39 +88,29 @@
 
 .orbit-core .core-title {
   font-family: var(--font-heading);
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 900;
   color: #ffffff;
-  letter-spacing: 0.06em;
-  text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
-}
-
-.orbit-core .core-sub {
-  font-size: 0.68rem;
-  font-weight: 800;
-  color: #fde68a;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  opacity: 0.95;
-  text-shadow: 0 0 8px rgba(235, 179, 40, 0.5);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 16px rgba(56, 189, 248, 0.8), 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes corePulse {
   0%, 100% {
     transform: scale(1);
     box-shadow:
-      0 0 20px rgba(235, 179, 40, 0.5),
-      0 0 50px rgba(235, 179, 40, 0.25),
-      0 0 90px rgba(76, 5, 25, 0.3),
-      inset 0 -4px 14px rgba(76, 5, 25, 0.4);
+      0 0 24px rgba(56, 189, 248, 0.5),
+      0 0 60px rgba(56, 189, 248, 0.3),
+      0 0 100px rgba(2, 132, 199, 0.25),
+      inset 0 -4px 14px rgba(30, 27, 75, 0.4);
   }
   50% {
     transform: scale(1.04);
     box-shadow:
-      0 0 30px rgba(235, 179, 40, 0.7),
-      0 0 70px rgba(235, 179, 40, 0.35),
-      0 0 120px rgba(76, 5, 25, 0.4),
-      inset 0 -4px 14px rgba(76, 5, 25, 0.4);
+      0 0 35px rgba(56, 189, 248, 0.75),
+      0 0 85px rgba(56, 189, 248, 0.45),
+      0 0 130px rgba(2, 132, 199, 0.35),
+      inset 0 -4px 14px rgba(30, 27, 75, 0.4);
   }
 }
 
@@ -150,15 +140,15 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #ebb328;
-  box-shadow: 0 0 8px rgba(235, 179, 40, 0.7);
+  background: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
 }
 
 .orbit-ring.ring-2 {
   width: 390px;
   height: 390px;
-  border: 1px solid rgba(235, 179, 40, 0.18);
-  box-shadow: inset 0 0 30px rgba(235, 179, 40, 0.03);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  box-shadow: inset 0 0 30px rgba(56, 189, 248, 0.04);
   animation: rotateRingRev 42s linear infinite;
 }
 
@@ -216,11 +206,11 @@
   background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(235, 179, 40, 0.25);
+  border: 1px solid rgba(56, 189, 248, 0.22);
   border-radius: var(--radius-full);
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.4),
-    0 0 12px rgba(235, 179, 40, 0.08);
+    0 0 12px rgba(56, 189, 248, 0.08);
   font-size: 0.84rem;
   font-weight: 700;
   color: #f1f5f9;
@@ -246,10 +236,10 @@
 .orbit-satellite:hover {
   transform: scale(1.1) translateY(-4px) !important;
   background: rgba(76, 5, 25, 0.85);
-  border-color: #ebb328;
+  border-color: #38bdf8;
   box-shadow:
     0 8px 30px rgba(76, 5, 25, 0.5),
-    0 0 25px rgba(235, 179, 40, 0.2);
+    0 0 25px rgba(56, 189, 248, 0.3);
   z-index: 20;
 }
 
@@ -262,15 +252,15 @@
   justify-content: center;
   font-size: 0.85rem;
   font-weight: 700;
-  background: rgba(235, 179, 40, 0.15) !important;
-  color: #ebb328 !important;
-  border: 1px solid rgba(235, 179, 40, 0.3) !important;
+  background: rgba(56, 189, 248, 0.15) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
   transition: all 0.3s ease;
 }
 
 .orbit-satellite:hover .sat-icon {
-  background: rgba(235, 179, 40, 0.25) !important;
-  box-shadow: 0 0 10px rgba(235, 179, 40, 0.3);
+  background: rgba(56, 189, 248, 0.25) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
 }
 
 /* Float Variations */
