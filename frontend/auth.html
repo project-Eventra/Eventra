@@ -23,10 +23,9 @@
     }
     .auth-card {
       padding: 2.5rem;
-      border: 1px solid var(--border-white-layer);
-      box-shadow: var(--shadow-lg), 0 0 45px rgba(52, 211, 153, 0.08);
-      background: rgba(12, 33, 23, 0.88);
-      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      background: #ffffff;
       border-radius: var(--radius-lg);
     }
     .landing-choice-grid {
@@ -44,8 +43,8 @@
       }
     }
     .choice-card {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border-white-layer);
+      background: #f8fafc;
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
       padding: 1.75rem 1.25rem;
       text-align: center;
@@ -59,32 +58,34 @@
       color: inherit;
     }
     .choice-card:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.4);
+      background: #ffffff;
+      border-color: #4c0519;
       transform: translateY(-3px);
-      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5), 0 0 20px rgba(52, 211, 153, 0.15);
+      box-shadow: 0 8px 24px rgba(76, 5, 25, 0.12);
     }
     .choice-icon {
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: var(--white-layer-mid);
+      background: #fdf2f4;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.4rem;
-      border: 1px solid var(--border-glass);
-      color: var(--accent-mint);
+      border: 1px solid #fecdd3;
+      color: #4c0519;
+      transition: all var(--transition-fast);
     }
     .choice-card:hover .choice-icon {
-      background: var(--accent-mint);
-      color: #05140d;
+      background: #4c0519;
+      color: #ffffff;
+      border-color: #4c0519;
     }
     .choice-title {
       font-family: var(--font-heading);
       font-size: 1.25rem;
       font-weight: 700;
-      color: #ffffff;
+      color: #0f172a;
       margin: 0;
     }
     .choice-desc {
@@ -94,7 +95,7 @@
       line-height: 1.4;
     }
     .role-option-card {
-      background: rgba(255, 255, 255, 0.03);
+      background: #f8fafc;
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
       padding: 1.15rem 1.25rem;
@@ -108,16 +109,17 @@
       width: 100%;
     }
     .role-option-card:hover {
-      background: rgba(255, 255, 255, 0.09);
-      border-color: rgba(255, 255, 255, 0.35);
+      background: #ffffff;
+      border-color: #4c0519;
       transform: translateX(4px);
+      box-shadow: 0 4px 14px rgba(76, 5, 25, 0.1);
     }
     .role-icon-box {
       width: 44px;
       height: 44px;
       border-radius: var(--radius-sm);
-      background: rgba(52, 211, 153, 0.12);
-      border: 1px solid rgba(52, 211, 153, 0.3);
+      background: #fef2f2;
+      border: 1px solid #fecaca;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -289,7 +291,7 @@
             &larr; Back to Main Options
           </button>
 
-          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.4rem; color: #ffffff;" id="role-view-heading">Select Account Type</h3>
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-main);" id="role-view-heading">Select Account Type</h3>
           <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem;" id="role-view-desc">Select your role to continue.</p>
 
           <div id="role-options-container">
@@ -297,7 +299,7 @@
             <button type="button" class="role-option-card" onclick="selectRole('student')">
               <div class="role-icon-box">🎓</div>
               <div style="flex:1;">
-                <div style="font-weight:700; font-size:1rem; color:#ffffff;" id="role-label-student">Sign Up as a Student</div>
+                <div style="font-weight:700; font-size:1rem; color:var(--text-main);" id="role-label-student">Sign Up as a Student</div>
                 <div style="font-size:0.8rem; color:var(--text-muted);">For university students participating in events and club activities.</div>
               </div>
               <div style="color:var(--text-dim);">&rarr;</div>
@@ -307,7 +309,7 @@
             <button type="button" class="role-option-card" onclick="selectRole('club')">
               <div class="role-icon-box">🏛️</div>
               <div style="flex:1;">
-                <div style="font-weight:700; font-size:1rem; color:#ffffff;" id="role-label-club">Sign Up as a Club Admin</div>
+                <div style="font-weight:700; font-size:1rem; color:var(--text-main);" id="role-label-club">Sign Up as a Club Admin</div>
                 <div style="font-size:0.8rem; color:var(--text-muted);">For student leaders and coordinators managing a university society.</div>
               </div>
               <div style="color:var(--text-dim);">&rarr;</div>
@@ -317,7 +319,7 @@
             <button type="button" class="role-option-card" onclick="selectRole('super_admin')">
               <div class="role-icon-box">🛡️</div>
               <div style="flex:1;">
-                <div style="font-weight:700; font-size:1rem; color:#ffffff;" id="role-label-super-admin">Sign Up as the Super Admin</div>
+                <div style="font-weight:700; font-size:1rem; color:var(--text-main);" id="role-label-super-admin">Sign Up as the Super Admin</div>
                 <div style="font-size:0.8rem; color:var(--text-muted);">Restricted platform administration with authorized bootstrap key.</div>
               </div>
               <div style="color:var(--text-dim);">&rarr;</div>
@@ -338,7 +340,7 @@
             </button>
           </div>
 
-          <h3 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.35rem; color: #ffffff;" id="form-heading">Form</h3>
+          <h3 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text-main);" id="form-heading">Form</h3>
           <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem;" id="form-subheading">Fill in the fields below.</p>
 
           <!-- 3.1 SIGN UP AS A STUDENT FORM -->
@@ -441,7 +443,7 @@
           <!-- 3.3 SIGN UP AS THE SUPER ADMIN FORM -->
           <form id="form-signup-super-admin" style="display: none;" onsubmit="submitSuperAdminSignup(event)" novalidate>
             <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #a7f3d0; line-height: 1.45;">
-              <div style="font-weight: 700; color: #ffffff; margin-bottom: 0.25rem;">🔐 Protected Super Admin Provisioning</div>
+              <div style="font-weight: 700; color: #065f46; margin-bottom: 0.25rem;">🔐 Protected Super Admin Provisioning</div>
               Super Admin account creation requires a secure system authorization bootstrap key. Public visitors cannot self-grant administrator rights.
             </div>
 
@@ -532,7 +534,7 @@
             <div id="club-pending-status-box" style="display:none; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: var(--radius-sm); padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: #fde68a;">
               <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem;">
                 <span class="badge-pending">Pending Verification</span>
-                <strong id="club-pending-name" style="color:#ffffff;">Club</strong>
+                <strong id="club-pending-name" style="color:#78350f;">Club</strong>
               </div>
               Your club registration has been submitted and is currently pending review by the Super Admin. You cannot access event management features until your club is approved.
             </div>
