@@ -1,80 +1,133 @@
 /* ===================================================================
    EVENTRA - Orbit & Nebula Animations
    "All clubs/events revolving around one platform"
-   Theme: Dark Green Obsidian & Crisp White Layer
+   Theme: Deep Space Nebula on Dark (#080d1a) background
    =================================================================== */
 
 /* Central Revolving Orbit System */
 .orbit-stage {
   position: relative;
   width: 100%;
-  max-width: 540px;
-  height: 500px;
+  max-width: 560px;
+  height: 520px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* Ambient nebula glow behind the whole stage */
+.orbit-stage::before {
+  content: '';
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(235, 179, 40, 0.10) 0%, rgba(76, 5, 25, 0.06) 50%, transparent 75%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: nebulaBreath 6s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes nebulaBreath {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
 /* Center Eventra Core Sun/Portal */
 .orbit-core {
-  width: 126px;
-  height: 126px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle, #ffffff 0%, #fef3c7 25%, #ebb328 60%, #4c0519 100%);
+  background: radial-gradient(circle at 40% 38%, #ffffff 0%, #fef3c7 18%, #ebb328 48%, #b8860b 72%, #4c0519 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 0 35px rgba(76, 5, 25, 0.5),
-    0 0 65px rgba(235, 179, 40, 0.35),
-    0 0 15px rgba(0, 0, 0, 0.1);
+    0 0 20px rgba(235, 179, 40, 0.5),
+    0 0 50px rgba(235, 179, 40, 0.25),
+    0 0 90px rgba(76, 5, 25, 0.3),
+    inset 0 -4px 14px rgba(76, 5, 25, 0.4);
   position: relative;
   z-index: 10;
-  animation: corePulse 4s ease-in-out infinite;
+  animation: corePulse 5s ease-in-out infinite;
   text-align: center;
   cursor: pointer;
-  border: 3px solid #ffffff;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+}
+
+/* Inner highlight ring on core */
+.orbit-core::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(235, 179, 40, 0.3);
+  animation: coreHaloSpin 12s linear infinite;
+  pointer-events: none;
+}
+
+.orbit-core::after {
+  content: '';
+  position: absolute;
+  inset: -22px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: coreHaloSpin 20s linear infinite reverse;
+  pointer-events: none;
+}
+
+@keyframes coreHaloSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .orbit-core .core-title {
   font-family: var(--font-heading);
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-size: 1.25rem;
+  font-weight: 900;
   color: #ffffff;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
 }
 
 .orbit-core .core-sub {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 800;
-  color: #fecaca;
+  color: #fde68a;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   opacity: 0.95;
+  text-shadow: 0 0 8px rgba(235, 179, 40, 0.5);
 }
 
 @keyframes corePulse {
   0%, 100% {
     transform: scale(1);
     box-shadow:
-      0 0 30px rgba(116, 27, 27, 0.4),
-      0 0 60px rgba(185, 28, 28, 0.25);
+      0 0 20px rgba(235, 179, 40, 0.5),
+      0 0 50px rgba(235, 179, 40, 0.25),
+      0 0 90px rgba(76, 5, 25, 0.3),
+      inset 0 -4px 14px rgba(76, 5, 25, 0.4);
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.04);
     box-shadow:
-      0 0 50px rgba(116, 27, 27, 0.65),
-      0 0 90px rgba(185, 28, 28, 0.4);
+      0 0 30px rgba(235, 179, 40, 0.7),
+      0 0 70px rgba(235, 179, 40, 0.35),
+      0 0 120px rgba(76, 5, 25, 0.4),
+      inset 0 -4px 14px rgba(76, 5, 25, 0.4);
   }
 }
 
-/* Rings */
+/* Orbit Track Rings — gradient arcs + rotating dot markers */
 .orbit-ring {
   position: absolute;
   border-radius: 50%;
-  border: 1px dashed rgba(15, 23, 42, 0.16);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -82,27 +135,64 @@
 }
 
 .orbit-ring.ring-1 {
-  width: 250px;
-  height: 250px;
-  border-color: rgba(15, 23, 42, 0.22);
-  animation: rotateRing 26s linear infinite;
+  width: 260px;
+  height: 260px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  animation: rotateRing 30s linear infinite;
+}
+
+/* Dot marker on ring-1 */
+.orbit-ring.ring-1::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ebb328;
+  box-shadow: 0 0 8px rgba(235, 179, 40, 0.7);
 }
 
 .orbit-ring.ring-2 {
-  width: 380px;
-  height: 380px;
-  border-style: solid;
-  border-color: rgba(116, 27, 27, 0.25);
-  box-shadow: inset 0 0 20px rgba(116, 27, 27, 0.04);
-  animation: rotateRingRev 38s linear infinite;
+  width: 390px;
+  height: 390px;
+  border: 1px solid rgba(235, 179, 40, 0.18);
+  box-shadow: inset 0 0 30px rgba(235, 179, 40, 0.03);
+  animation: rotateRingRev 42s linear infinite;
+}
+
+/* Dot marker on ring-2 */
+.orbit-ring.ring-2::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f43f5e;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
 }
 
 .orbit-ring.ring-3 {
-  width: 490px;
-  height: 490px;
-  border-style: dotted;
-  border-color: rgba(15, 23, 42, 0.16);
-  animation: rotateRing 52s linear infinite;
+  width: 500px;
+  height: 500px;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  animation: rotateRing 56s linear infinite;
+}
+
+/* Dot marker on ring-3 */
+.orbit-ring.ring-3::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
 }
 
 @keyframes rotateRing {
@@ -115,45 +205,72 @@
   to { transform: translate(-50%, -50%) rotate(0deg); }
 }
 
-/* Satellites / Orbiting Club & Event Badges - Brown Background with White Text */
+/* Satellites — Glassmorphism capsules with glow + float */
 .orbit-satellite {
   position: absolute;
   pointer-events: auto;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 0.95rem;
-  background: #4c0519;
-  border: 1px solid #ebb328;
+  gap: 0.6rem;
+  padding: 0.6rem 1.05rem;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(235, 179, 40, 0.25);
   border-radius: var(--radius-full);
-  box-shadow: 0 4px 16px rgba(76, 5, 25, 0.35);
-  font-size: 0.82rem;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 12px rgba(235, 179, 40, 0.08);
+  font-size: 0.84rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #f1f5f9;
   white-space: nowrap;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
+  animation: satFloat 6s ease-in-out infinite;
+}
+
+/* Stagger the float animation for each satellite */
+.orbit-satellite:nth-child(4) { animation-delay: 0s; }
+.orbit-satellite:nth-child(5) { animation-delay: 1s; }
+.orbit-satellite:nth-child(6) { animation-delay: 2s; }
+.orbit-satellite:nth-child(7) { animation-delay: 3s; }
+.orbit-satellite:nth-child(8) { animation-delay: 4s; }
+.orbit-satellite:nth-child(9) { animation-delay: 5s; }
+
+@keyframes satFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
 }
 
 .orbit-satellite:hover {
-  transform: scale(1.12) !important;
-  background: #370311;
-  box-shadow: 0 6px 22px rgba(116, 27, 27, 0.5);
+  transform: scale(1.1) translateY(-4px) !important;
+  background: rgba(76, 5, 25, 0.85);
+  border-color: #ebb328;
+  box-shadow:
+    0 8px 30px rgba(76, 5, 25, 0.5),
+    0 0 25px rgba(235, 179, 40, 0.2);
   z-index: 20;
 }
 
 .orbit-satellite .sat-icon {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  background: rgba(235, 179, 40, 0.15) !important;
+  color: #ebb328 !important;
+  border: 1px solid rgba(235, 179, 40, 0.3) !important;
+  transition: all 0.3s ease;
+}
+
+.orbit-satellite:hover .sat-icon {
+  background: rgba(235, 179, 40, 0.25) !important;
+  box-shadow: 0 0 10px rgba(235, 179, 40, 0.3);
 }
 
 /* Float Variations */
