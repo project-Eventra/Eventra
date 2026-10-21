@@ -36,7 +36,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-md);
-  background: #4c0519;
+  background: #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,7 +44,7 @@
   font-size: 1.2rem;
   font-weight: 800;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(76, 5, 25, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   border: 1px solid #38bdf8;
 }
 
@@ -90,9 +90,9 @@
 
 .sidebar-item.active {
   color: #ffffff;
-  background: #4c0519;
+  background: #1e293b;
   border-color: #38bdf8;
-  box-shadow: 0 4px 12px rgba(76, 5, 25, 0.35);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
 }
 
 .sidebar-item svg {
@@ -173,9 +173,9 @@
 }
 
 .stat-icon-cyan, .stat-icon-brown {
-  background: #fdf2f4;
-  color: #4c0519;
-  border: 1px solid #fecdd3;
+  background: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
 .stat-icon-purple {
@@ -272,7 +272,7 @@
 .ticket-pass {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
-  border-left: 4px solid #4c0519;
+  border-left: 4px solid #38bdf8;
   border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
@@ -336,7 +336,7 @@
 .ticket-code {
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  color: #4c0519;
+  color: #0284c7;
   letter-spacing: 0.1em;
   font-weight: 700;
 }
@@ -369,7 +369,7 @@
 }
 
 .tab-btn.active {
-  color: #4c0519;
+  color: #0284c7;
   border-bottom-color: #38bdf8;
   font-weight: 700;
 }

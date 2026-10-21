@@ -1,8 +1,8 @@
 /* ===================================================================
    EVENTRA - Campus Life & Event Platform
    Font: Inter / Roboto Typography
-   Palette: Deep Burgundy (#4c0519), Electric Cyan (#38bdf8),
-            Warm Sand (#f5ede2), Crisp White & Obsidian
+   Palette: Cosmic Obsidian (#080d1a), Electric Cyan (#38bdf8),
+            Luminous Violet (#a855f7), Crisp White & Midnight
    =================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -20,14 +20,14 @@
   --bg-dark-section: #0a0f1d;
   --bg-dark-card: #111827;
 
-  /* Deep Wine Burgundy (Signature Primary) */
-  --bg-text-brown: #4c0519;
-  --bg-brown: #4c0519;
-  --bg-burgundy: #4c0519;
-  --accent-brown: #4c0519;
-  --accent-brown-light: #600821;
-  --accent-brown-hover: #370311;
-  --border-brown: #600821;
+  /* Deep Obsidian & Cosmic Indigo (Signature Primary) */
+  --bg-text-brown: #38bdf8;
+  --bg-brown: #0f172a;
+  --bg-burgundy: #0f172a;
+  --accent-brown: #38bdf8;
+  --accent-brown-light: #1e293b;
+  --accent-brown-hover: #1e1b4b;
+  --border-brown: #334155;
 
   /* Electric Cyan (Signature Secondary) */
   --bg-gold: #38bdf8;
@@ -38,20 +38,20 @@
   --bg-sand: #f5ede2;
 
   /* Primary Brand Accents */
-  --accent-cyan: #4c0519;
+  --accent-cyan: #38bdf8;
   --accent-blue: #0f172a;
   --accent-green: #15803d;
   --accent-emerald: #15803d;
-  --accent-mint: #4c0519;
-  --accent-pine: #370311;
-  --accent-light: #fef2f2;
-  --accent-purple: #4c0519;
-  --accent-magenta: #4c0519;
-  --accent-rose: #dc2626;
+  --accent-mint: #34d399;
+  --accent-pine: #1e293b;
+  --accent-light: #f0f9ff;
+  --accent-purple: #818cf8;
+  --accent-magenta: #a855f7;
+  --accent-rose: #f43f5e;
 
   /* Gradients */
-  --grad-primary: linear-gradient(135deg, #4c0519 0%, #600821 100%);
-  --grad-accent: linear-gradient(135deg, #370311 0%, #4c0519 50%, #38bdf8 100%);
+  --grad-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --grad-accent: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #818cf8 100%);
   --grad-white: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
   --grad-dark: linear-gradient(180deg, #090e17 0%, #030712 100%);
 
@@ -65,14 +65,14 @@
   --text-muted: #475569;
   --text-dim: #64748b;
   --text-inverse: #ffffff;
-  --text-brown: #4c0519;
-  --text-burgundy: #4c0519;
+  --text-brown: #38bdf8;
+  --text-burgundy: #38bdf8;
 
   /* Borders & Shadows */
   --border-subtle: #e2e8f0;
   --border-glass: #cbd5e1;
   --border-white-layer: #e2e8f0;
-  --border-accent: rgba(116, 27, 27, 0.35);
+  --border-accent: rgba(56, 189, 248, 0.35);
   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.07);
   --shadow-lg: 0 16px 36px -8px rgba(0, 0, 0, 0.12);
@@ -136,13 +136,13 @@ p {
 }
 
 .text-gradient {
-  color: #741b1b;
+  color: #38bdf8;
   display: inline-block;
   font-weight: 800;
 }
 
 .text-gradient-accent {
-  color: #741b1b;
+  color: #a855f7;
   display: inline-block;
 }
 
@@ -152,7 +152,7 @@ p {
 }
 
 .text-gradient-cosmic {
-  color: #741b1b;
+  color: #38bdf8;
   display: inline-block;
 }
 
@@ -237,20 +237,20 @@ p {
   margin: 0 auto 3.5rem;
 }
 
-/* Text Background Burgundy */
+/* Section Badges */
 .section-badge, .text-bg-brown {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem 1rem;
-  background-color: #4c0519 !important;
-  border: 1px solid #600821;
+  background-color: rgba(30, 41, 59, 0.75) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3);
   border-radius: var(--radius-full);
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #ffffff !important;
+  color: #38bdf8 !important;
   margin-bottom: 1rem;
 }
 
@@ -329,11 +329,12 @@ p {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #4c0519;
+  background: #0f172a;
+  border: 1px solid rgba(56, 189, 248, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 12px rgba(76, 5, 25, 0.4);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
   position: relative;
 }
 
@@ -372,8 +373,8 @@ p {
 }
 
 .nav-link:hover, .nav-link.active {
-  background-color: #4c0519;
-  color: #ffffff !important;
+  background-color: rgba(56, 189, 248, 0.12);
+  color: #38bdf8 !important;
 }
 
 .nav-actions {
@@ -428,13 +429,13 @@ p {
 }
 
 .btn-burgundy {
-  background: #4c0519;
+  background: #1e293b;
   color: #ffffff !important;
-  border: 1px solid #370311;
+  border: 1px solid #334155;
 }
 
 .btn-burgundy:hover {
-  background: #370311;
+  background: #334155;
   color: #ffffff !important;
   transform: translateY(-2px);
 }
@@ -503,13 +504,14 @@ p {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #741b1b;
+  background: #1e293b;
+  border: 1px solid #38bdf8;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 0.75rem;
-  color: #ffffff;
+  color: #38bdf8;
 }
 
 .user-role-badge {
@@ -520,7 +522,7 @@ p {
   text-transform: uppercase;
 }
 
-.role-student { background: #741b1b; color: #ffffff; }
+.role-student { background: #1e293b; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
 .role-club_admin { background: #0f172a; color: #ffffff; }
 .role-super_admin { background: #15803d; color: #ffffff; }
 
@@ -556,8 +558,8 @@ p {
 
 .form-control:focus {
   outline: none;
-  border-color: #741b1b;
-  box-shadow: 0 0 0 3px rgba(116, 27, 27, 0.18);
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
   background: #ffffff;
 }
 
@@ -602,9 +604,9 @@ textarea.form-control {
 }
 
 .badge-purple, .badge-cyan, .badge-brown {
-  background-color: #4c0519 !important;
-  color: #ffffff !important;
-  border: 1px solid #600821;
+  background-color: rgba(30, 41, 59, 0.75) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
 .badge-emerald {
@@ -712,17 +714,17 @@ textarea.form-control {
 
 .toast.toast-success { border-left: 4px solid #15803d; }
 .toast.toast-error { border-left: 4px solid #dc2626; }
-.toast.toast-info { border-left: 4px solid #4c0519; }
+.toast.toast-info { border-left: 4px solid #38bdf8; }
 
 @keyframes slideInToast {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
 
-/* Footer - Deep Burgundy with Golden Amber Border */
+/* Footer - Deep Midnight Obsidian */
 .footer {
-  background: #4c0519;
-  border-top: 2px solid #38bdf8;
+  background: #050811;
+  border-top: 1px solid #1e293b;
   padding: 4.5rem 0 2.5rem;
   position: relative;
   z-index: 1;
@@ -867,8 +869,8 @@ body.page-dark .nav-link {
 
 body.page-dark .nav-link:hover, 
 body.page-dark .nav-link.active {
-  background-color: #4c0519;
-  color: #ffffff !important;
+  background-color: rgba(56, 189, 248, 0.14);
+  color: #38bdf8 !important;
 }
 
 body.page-dark .glass-card {
