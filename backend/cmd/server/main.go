@@ -117,6 +117,9 @@ func main() {
 				w.Write([]byte(`{"status":"ok","app":"Eventra","timestamp":"` + time.Now().UTC().Format(time.RFC3339) + `"}`))
 			})
 
+			// Public Platform Stats
+			api.Get("/stats", adminHandler.GetDashboardStats)
+
 			// Public Feedback
 			api.With(middleware.OptionalAuth(authManager)).Post("/feedback", feedbackHandler.SubmitFeedback)
 

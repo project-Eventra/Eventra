@@ -116,7 +116,7 @@
       const container = document.getElementById('clubs-grid');
       try {
         const res = await window.api.get('/clubs');
-        allClubs = res.data || [];
+        allClubs = res.data?.items || (Array.isArray(res.data) ? res.data : []);
         renderClubs();
       } catch (err) {
         container.innerHTML = `
@@ -131,7 +131,10 @@
     function renderClubs() {
       const container = document.getElementById('clubs-grid');
       let filtered = allClubs.filter(club => {
-        const matchesCat = !currentFilter || (club.category || '').toLowerCase() === currentFilter.toLowerCase();
+        const matchesCat = !currentFilter || 
+          (club.category && club.category.toLowerCase() === currentFilter.toLowerCase()) ||
+          (club.name && club.name.toLowerCase().includes(currentFilter.toLowerCase())) ||
+          (club.description && club.description.toLowerCase().includes(currentFilter.toLowerCase()));
         const matchesQuery = !currentQuery || 
           (club.name || '').toLowerCase().includes(currentQuery) || 
           (club.description || '').toLowerCase().includes(currentQuery);
@@ -172,7 +175,7 @@
 
             <div style="border-top:1px solid var(--border-subtle); padding-top:1rem; display:flex; justify-content:space-between; align-items:center;">
               <span style="font-size:0.8rem; color:var(--text-dim);">
-                ✉️ ${escapeHtml(club.contact_email || 'info@university.edu')}
+                ✉️ ${escapeHtml(club.contact_email || club.email || 'info@university.edu')}
               </span>
               <a href="events.html?club=${club.id}" class="btn btn-sm btn-glass">Events</a>
             </div>

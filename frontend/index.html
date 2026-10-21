@@ -59,7 +59,7 @@
             </div>
             <div>
               <div style="font-family: var(--font-heading); font-size: 1.9rem; font-weight: 800; color: var(--accent-emerald);" id="stat-students-hero">0</div>
-              <div style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Student Registrations</div>
+              <div style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Registered Students</div>
             </div>
           </div>
         </div>
@@ -287,9 +287,10 @@
       try {
         const statsRes = await window.api.get('/stats');
         if (statsRes && statsRes.data) {
-          document.getElementById('stat-clubs-hero').innerText = statsRes.data.total_clubs ?? 0;
-          document.getElementById('stat-events-hero').innerText = statsRes.data.total_events ?? 0;
-          document.getElementById('stat-students-hero').innerText = statsRes.data.total_registrations ?? 0;
+          const stats = statsRes.data;
+          document.getElementById('stat-clubs-hero').innerText = stats.total_clubs ?? 0;
+          document.getElementById('stat-events-hero').innerText = stats.total_events ?? 0;
+          document.getElementById('stat-students-hero').innerText = stats.total_students ?? stats.total_registrations ?? 0;
         }
       } catch (e) {
         // Fallback to 0

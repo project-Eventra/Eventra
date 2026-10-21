@@ -145,8 +145,8 @@ func GetDashboardStats(ctx context.Context, pool *pgxpool.Pool) (*models.Dashboa
 		dest  *int
 	}{
 		{`SELECT COUNT(*) FROM users WHERE role = 'student'`, &stats.TotalStudents},
-		{`SELECT COUNT(*) FROM clubs`, &stats.TotalClubs},
-		{`SELECT COUNT(*) FROM events`, &stats.TotalEvents},
+		{`SELECT COUNT(*) FROM clubs WHERE verification_status = 'approved'`, &stats.TotalClubs},
+		{`SELECT COUNT(*) FROM events WHERE status = 'active'`, &stats.TotalEvents},
 		{`SELECT COUNT(*) FROM registrations WHERE status != 'cancelled'`, &stats.TotalRegistrations},
 		{`SELECT COUNT(*) FROM clubs WHERE verification_status = 'pending'`, &stats.PendingClubs},
 		{`SELECT COUNT(*) FROM events WHERE status = 'active'`, &stats.ActiveEvents},
