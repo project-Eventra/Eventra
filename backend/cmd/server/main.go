@@ -23,7 +23,7 @@ import (
 )
 
 func main() {
-	log.Println("Starting Evenrtra Event Management Platform...")
+	log.Println("Starting Eventra Event Management Platform...")
 
 	// 1. Load configuration
 	cfg, err := config.Load()
@@ -33,10 +33,10 @@ func main() {
 		cfg = &config.Config{
 			Port:            "8080",
 			Environment:     "development",
-			DatabaseURL:     getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/evenrtra?sslmode=disable"),
-			JWTSecret:       getEnv("JWT_SECRET", "evenrtra-super-secret-key-that-is-at-least-32-chars-long!"),
-			JWTIssuer:       "evenrtra",
-			JWTAudience:     "evenrtra-web",
+			DatabaseURL:     getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/eventra?sslmode=disable"),
+			JWTSecret:       getEnv("JWT_SECRET", "eventra-super-secret-key-that-is-at-least-32-chars-long!"),
+			JWTIssuer:       "eventra",
+			JWTAudience:     "eventra-web",
 			FirebaseProject: os.Getenv("FIREBASE_PROJECT_ID"),
 			FrontendOrigin:  getEnv("FRONTEND_ORIGIN", "http://localhost:5500"),
 			CookieDomain:    getEnv("COOKIE_DOMAIN", "localhost"),
@@ -114,7 +114,7 @@ func main() {
 			// Health check
 			api.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
-				w.Write([]byte(`{"status":"ok","app":"Evenrtra","timestamp":"` + time.Now().UTC().Format(time.RFC3339) + `"}`))
+				w.Write([]byte(`{"status":"ok","app":"Eventra","timestamp":"` + time.Now().UTC().Format(time.RFC3339) + `"}`))
 			})
 
 			// Public Feedback
@@ -124,8 +124,11 @@ func main() {
 			api.Route("/auth", func(authRouter chi.Router) {
 				authRouter.Post("/register/student", authHandler.RegisterStudent)
 				authRouter.Post("/register/club", authHandler.RegisterClub)
+				authRouter.Post("/register/super-admin", authHandler.RegisterSuperAdmin)
 				authRouter.Post("/login", authHandler.Login)
-				authRouter.Post("/firebase", authHandler.FirebaseAuth)
+				authRouter.Post("/login/student", authHandler.LoginStudent)
+				authRouter.Post("/login/club", authHandler.LoginClub)
+				authRouter.Post("/login/super-admin", authHandler.LoginSuperAdmin)
 				authRouter.Post("/forgot-password", authHandler.ForgotPassword)
 
 				// Authenticated auth routes
@@ -253,14 +256,14 @@ func main() {
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		log.Printf("Evenrtra server running on http://localhost:%s", cfg.Port)
+		log.Printf("Eventra server running on http://localhost:%s", cfg.Port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server error: %v", err)
 		}
 	}()
 
 	<-stop
-	log.Println("Shutting down Evenrtra server gracefully...")
+	log.Println("Shutting down Eventra server gracefully...")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -269,7 +272,7 @@ func main() {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 
-	log.Println("Evenrtra server stopped successfully")
+	log.Println("Eventra server stopped successfully")
 }
 
 func getEnv(key, fallback string) string {

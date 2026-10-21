@@ -63,43 +63,43 @@ type ClubAdminProfile struct {
 
 // Event represents a club event
 type Event struct {
-	ID                   uuid.UUID  `json:"id" db:"id"`
-	ClubID               uuid.UUID  `json:"club_id" db:"club_id"`
-	Name                 string     `json:"name" db:"name"`
-	ShortDescription     *string    `json:"short_description,omitempty" db:"short_description"`
-	Description          *string    `json:"description,omitempty" db:"description"`
-	EventDate            time.Time  `json:"event_date" db:"event_date"`
-	RegistrationDeadline time.Time  `json:"registration_deadline" db:"registration_deadline"`
-	Venue                *string    `json:"venue,omitempty" db:"venue"`
-	ParticipationType    string     `json:"participation_type" db:"participation_type"`
-	MinGroupSize         int        `json:"min_group_size" db:"min_group_size"`
-	MaxGroupSize         int        `json:"max_group_size" db:"max_group_size"`
-	MaxParticipants      *int       `json:"max_participants,omitempty" db:"max_participants"`
-	RegistrationFee      float64    `json:"registration_fee" db:"registration_fee"`
-	HasFee               bool       `json:"has_fee" db:"has_fee"`
-	FeeInstructions      *string    `json:"fee_instructions,omitempty" db:"fee_instructions"`
-	Rules                *string    `json:"rules,omitempty" db:"rules"`
-	Status               string     `json:"status" db:"status"`
-	CreatedAt            time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt            time.Time  `json:"updated_at" db:"updated_at"`
+	ID                   uuid.UUID `json:"id" db:"id"`
+	ClubID               uuid.UUID `json:"club_id" db:"club_id"`
+	Name                 string    `json:"name" db:"name"`
+	ShortDescription     *string   `json:"short_description,omitempty" db:"short_description"`
+	Description          *string   `json:"description,omitempty" db:"description"`
+	EventDate            time.Time `json:"event_date" db:"event_date"`
+	RegistrationDeadline time.Time `json:"registration_deadline" db:"registration_deadline"`
+	Venue                *string   `json:"venue,omitempty" db:"venue"`
+	ParticipationType    string    `json:"participation_type" db:"participation_type"`
+	MinGroupSize         int       `json:"min_group_size" db:"min_group_size"`
+	MaxGroupSize         int       `json:"max_group_size" db:"max_group_size"`
+	MaxParticipants      *int      `json:"max_participants,omitempty" db:"max_participants"`
+	RegistrationFee      float64   `json:"registration_fee" db:"registration_fee"`
+	HasFee               bool      `json:"has_fee" db:"has_fee"`
+	FeeInstructions      *string   `json:"fee_instructions,omitempty" db:"fee_instructions"`
+	Rules                *string   `json:"rules,omitempty" db:"rules"`
+	Status               string    `json:"status" db:"status"`
+	CreatedAt            time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at" db:"updated_at"`
 	// Computed/joined fields
-	ClubName             string     `json:"club_name,omitempty" db:"club_name"`
-	Category             string     `json:"category,omitempty"`
-	RegistrationCount    int        `json:"registration_count" db:"registration_count"`
-	GroupCount           int        `json:"group_count,omitempty" db:"group_count"`
-	IsRegistered         bool       `json:"is_registered,omitempty"`
+	ClubName          string `json:"club_name,omitempty" db:"club_name"`
+	Category          string `json:"category,omitempty"`
+	RegistrationCount int    `json:"registration_count" db:"registration_count"`
+	GroupCount        int    `json:"group_count,omitempty" db:"group_count"`
+	IsRegistered      bool   `json:"is_registered,omitempty"`
 }
 
 // EventCustomField represents a custom registration question
 type EventCustomField struct {
-	ID           uuid.UUID  `json:"id" db:"id"`
-	EventID      uuid.UUID  `json:"event_id" db:"event_id"`
-	FieldName    string     `json:"field_name" db:"field_name"`
-	FieldType    string     `json:"field_type" db:"field_type"`
-	FieldOptions *string    `json:"field_options,omitempty" db:"field_options"`
-	IsRequired   bool       `json:"is_required" db:"is_required"`
-	SortOrder    int        `json:"sort_order" db:"sort_order"`
-	CreatedAt    time.Time  `json:"created_at" db:"created_at"`
+	ID           uuid.UUID `json:"id" db:"id"`
+	EventID      uuid.UUID `json:"event_id" db:"event_id"`
+	FieldName    string    `json:"field_name" db:"field_name"`
+	FieldType    string    `json:"field_type" db:"field_type"`
+	FieldOptions *string   `json:"field_options,omitempty" db:"field_options"`
+	IsRequired   bool      `json:"is_required" db:"is_required"`
+	SortOrder    int       `json:"sort_order" db:"sort_order"`
+	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 }
 
 // Registration represents an event registration
@@ -114,14 +114,14 @@ type Registration struct {
 	CreatedAt        time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at" db:"updated_at"`
 	// Computed/joined fields
-	EventName        string     `json:"event_name,omitempty" db:"event_name"`
-	ClubName         string     `json:"club_name,omitempty" db:"club_name"`
-	Venue            string     `json:"venue,omitempty"`
-	EventDate        *time.Time `json:"event_date,omitempty" db:"event_date"`
-	Deadline         *time.Time `json:"deadline,omitempty" db:"registration_deadline"`
-	StudentName      string     `json:"student_name,omitempty"`
-	StudentRegNo     string     `json:"student_reg_no,omitempty"`
-	StudentEmail     string     `json:"student_email,omitempty"`
+	EventName    string     `json:"event_name,omitempty" db:"event_name"`
+	ClubName     string     `json:"club_name,omitempty" db:"club_name"`
+	Venue        string     `json:"venue,omitempty"`
+	EventDate    *time.Time `json:"event_date,omitempty" db:"event_date"`
+	Deadline     *time.Time `json:"deadline,omitempty" db:"registration_deadline"`
+	StudentName  string     `json:"student_name,omitempty"`
+	StudentRegNo string     `json:"student_reg_no,omitempty"`
+	StudentEmail string     `json:"student_email,omitempty"`
 }
 
 // RegistrationGroup represents a group registration
@@ -134,21 +134,21 @@ type RegistrationGroup struct {
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 	// Joined fields
-	Members      []GroupMember `json:"members,omitempty"`
-	LeaderName   string        `json:"leader_name,omitempty"`
+	Members    []GroupMember `json:"members,omitempty"`
+	LeaderName string        `json:"leader_name,omitempty"`
 }
 
 // GroupMember represents a member of a registration group
 type GroupMember struct {
-	ID                     uuid.UUID  `json:"id" db:"id"`
-	GroupID                uuid.UUID  `json:"group_id" db:"group_id"`
-	MemberName             string     `json:"member_name" db:"member_name"`
-	MemberEmail            *string    `json:"member_email,omitempty" db:"member_email"`
-	MemberPhone            *string    `json:"member_phone,omitempty" db:"member_phone"`
-	MemberRegistrationNumber *string  `json:"member_registration_number,omitempty" db:"member_registration_number"`
-	UserID                 *uuid.UUID `json:"user_id,omitempty" db:"user_id"`
-	CustomFieldsData       *string    `json:"custom_fields_data,omitempty" db:"custom_fields_data"`
-	CreatedAt              time.Time  `json:"created_at" db:"created_at"`
+	ID                       uuid.UUID  `json:"id" db:"id"`
+	GroupID                  uuid.UUID  `json:"group_id" db:"group_id"`
+	MemberName               string     `json:"member_name" db:"member_name"`
+	MemberEmail              *string    `json:"member_email,omitempty" db:"member_email"`
+	MemberPhone              *string    `json:"member_phone,omitempty" db:"member_phone"`
+	MemberRegistrationNumber *string    `json:"member_registration_number,omitempty" db:"member_registration_number"`
+	UserID                   *uuid.UUID `json:"user_id,omitempty" db:"user_id"`
+	CustomFieldsData         *string    `json:"custom_fields_data,omitempty" db:"custom_fields_data"`
+	CreatedAt                time.Time  `json:"created_at" db:"created_at"`
 }
 
 // Payment represents a payment record

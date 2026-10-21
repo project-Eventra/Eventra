@@ -173,17 +173,10 @@ func (v *Validator) Errors() ValidationErrors {
 	return v.errors
 }
 
-// Password validates password strength
+// Password validates password strength (min 8 characters)
 func (v *Validator) Password(field, value string) *Validator {
 	if utf8.RuneCountInString(value) < 8 {
 		v.errors = append(v.errors, ValidationError{Field: field, Message: "must be at least 8 characters"})
-		return v
-	}
-	hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(value)
-	hasLower := regexp.MustCompile(`[a-z]`).MatchString(value)
-	hasNumber := regexp.MustCompile(`[0-9]`).MatchString(value)
-	if !hasUpper || !hasLower || !hasNumber {
-		v.errors = append(v.errors, ValidationError{Field: field, Message: "must contain uppercase, lowercase, and a number"})
 	}
 	return v
 }

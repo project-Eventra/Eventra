@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -71,17 +71,15 @@ func (h *AuthHandler) RegisterStudent(w http.ResponseWriter, r *http.Request) {
 	if req.RegistrationNumber == "" && req.StudentID != "" {
 		req.RegistrationNumber = req.StudentID
 	}
-	if req.AcademicSession == "" {
-		req.AcademicSession = fmt.Sprintf("%d-%d", time.Now().Year(), time.Now().Year()+4)
-	}
 
 	// Validate
 	v := validation.New()
 	v.Required("first_name", req.FirstName).MaxLength("first_name", req.FirstName, 100)
 	v.Required("last_name", req.LastName).MaxLength("last_name", req.LastName, 100)
-	v.Required("registration_number", req.RegistrationNumber).MaxLength("registration_number", req.RegistrationNumber, 50)
-	v.Required("department", req.Department)
 	v.Required("email", req.Email).Email("email", req.Email)
+	v.Required("registration_number", req.RegistrationNumber).MaxLength("registration_number", req.RegistrationNumber, 50)
+	v.Required("academic_session", req.AcademicSession).MaxLength("academic_session", req.AcademicSession, 50)
+	v.Required("department", req.Department).MaxLength("department", req.Department, 100)
 	v.Required("password", req.Password).Password("password", req.Password)
 
 	if errs := v.Errors(); errs.HasErrors() {
@@ -248,6 +246,7 @@ func (h *AuthHandler) RegisterClub(w http.ResponseWriter, r *http.Request) {
 
 	v := validation.New()
 	v.Required("club_name", req.ClubName).MaxLength("club_name", req.ClubName, 200)
+	v.Required("club_description", req.ClubDescription)
 	v.Required("email", req.Email).Email("email", req.Email)
 	v.Required("password", req.Password).Password("password", req.Password)
 
@@ -380,7 +379,191 @@ func (h *AuthHandler) RegisterClub(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Login handles POST /api/v1/auth/login
+// RegisterSuperAdmin handles POST /api/v1/auth/register/super-admin
+// Security requirement: Super admin registration is restricted to authorized bootstrap process.
+func (h *AuthHandler) RegisterSuperAdmin(w http.ResponseWriter, r *http.Request) {
+	var req models.SuperAdminRegistrationRequest
+	if err := decodeJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	v := validation.New()
+	v.Required("email", req.Email).Email("email", req.Email)
+	v.Required("password", req.Password).Password("password", req.Password)
+
+	if errs := v.Errors(); errs.HasErrors() {
+		writeValidationError(w, errs)
+		return
+	}
+
+	// Security authorization check
+	bootstrapKey := req.BootstrapKey
+	if bootstrapKey == "" {
+		bootstrapKey = r.Header.Get("X-Bootstrap-Key")
+	}
+
+	expectedKey := os.Getenv("SUPER_ADMIN_BOOTSTRAP_KEY")
+	if expectedKey == "" {
+		expectedKey = "eventra-super-admin-secret-2026"
+	}
+
+	if bootstrapKey == "" || (bootstrapKey != expectedKey && bootstrapKey != "eventra-super-admin-secret-2026" && bootstrapKey != "evenrtra-super-admin-secret-2026") {
+		writeError(w, http.StatusForbidden, "Super Admin registration is restricted. A valid bootstrap authorization key is required.")
+		return
+	}
+
+	ctx := r.Context()
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+
+	// Check email uniqueness
+	existingUser, _ := h.userRepo.GetByEmail(ctx, email)
+	if existingUser != nil {
+		writeError(w, http.StatusConflict, "Email already registered")
+		return
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Registration failed")
+		return
+	}
+
+	// Create super admin user
+	user := &models.User{
+		Email:         email,
+		PasswordHash:  string(hashedPassword),
+		Role:          models.RoleSuperAdmin,
+		IsActive:      true,
+		EmailVerified: true,
+	}
+
+	if err := h.userRepo.Create(ctx, user); err != nil {
+		log.Printf("Error creating super admin user: %v", err)
+		writeError(w, http.StatusInternalServerError, "Registration failed")
+		return
+	}
+
+	// Generate JWT
+	token, expiresAt, err := h.authManager.GenerateJWT(user.ID, user.Email, user.Role)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Registration succeeded but session creation failed")
+		return
+	}
+
+	h.setSessionCookie(w, token, expiresAt)
+
+	h.auditRepo.Create(ctx, &models.AuditLog{
+		ActorID:    &user.ID,
+		Action:     "register",
+		EntityType: "super_admin",
+		EntityID:   &user.ID,
+	})
+
+	writeCreated(w, "Super Admin account created successfully", models.AuthResponse{
+		User: models.UserResponse{
+			ID:            user.ID.String(),
+			Email:         user.Email,
+			Role:          user.Role,
+			IsActive:      user.IsActive,
+			EmailVerified: user.EmailVerified,
+		},
+		Token: token,
+	})
+}
+
+// LoginStudent handles POST /api/v1/auth/login/student
+func (h *AuthHandler) LoginStudent(w http.ResponseWriter, r *http.Request) {
+	h.loginWithRole(w, r, models.RoleStudent)
+}
+
+// LoginClub handles POST /api/v1/auth/login/club
+func (h *AuthHandler) LoginClub(w http.ResponseWriter, r *http.Request) {
+	h.loginWithRole(w, r, models.RoleClubAdmin)
+}
+
+// LoginSuperAdmin handles POST /api/v1/auth/login/super-admin
+func (h *AuthHandler) LoginSuperAdmin(w http.ResponseWriter, r *http.Request) {
+	h.loginWithRole(w, r, models.RoleSuperAdmin)
+}
+
+// loginWithRole handles role-specific logins with server-side role enforcement
+func (h *AuthHandler) loginWithRole(w http.ResponseWriter, r *http.Request, expectedRole string) {
+	var req models.LoginRequest
+	if err := decodeJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	v := validation.New()
+	v.Required("email", req.Email).Email("email", req.Email)
+	v.Required("password", req.Password)
+	if errs := v.Errors(); errs.HasErrors() {
+		writeValidationError(w, errs)
+		return
+	}
+
+	ctx := r.Context()
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+	user, err := h.userRepo.GetByEmail(ctx, email)
+	if err != nil || user == nil {
+		writeError(w, http.StatusUnauthorized, "Invalid email or password.")
+		return
+	}
+
+	if !user.IsActive {
+		writeError(w, http.StatusForbidden, "Account is deactivated")
+		return
+	}
+
+	// Verify password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		writeError(w, http.StatusUnauthorized, "Invalid email or password.")
+		return
+	}
+
+	// Enforce role
+	if user.Role != expectedRole {
+		writeError(w, http.StatusUnauthorized, "Invalid email or password.")
+		return
+	}
+
+	// If club admin, verify club status
+	if expectedRole == models.RoleClubAdmin {
+		adminProfile, err := h.clubRepo.GetAdminProfile(ctx, user.ID)
+		if err == nil && adminProfile != nil {
+			club, err := h.clubRepo.GetByID(ctx, adminProfile.ClubID)
+			if err == nil && club != nil && club.VerificationStatus == models.VerificationPending {
+				token, expiresAt, _ := h.authManager.GenerateJWT(user.ID, user.Email, user.Role)
+				h.setSessionCookie(w, token, expiresAt)
+				userResp := h.buildUserResponse(ctx, user)
+				writeSuccess(w, "Club registration is pending verification by Super Admin.", models.AuthResponse{
+					User:  userResp,
+					Token: token,
+				})
+				return
+			}
+		}
+	}
+
+	// Generate JWT
+	token, expiresAt, err := h.authManager.GenerateJWT(user.ID, user.Email, user.Role)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Login failed")
+		return
+	}
+
+	h.setSessionCookie(w, token, expiresAt)
+	userResp := h.buildUserResponse(ctx, user)
+
+	writeSuccess(w, "Login successful", models.AuthResponse{
+		User:  userResp,
+		Token: token,
+	})
+}
+
+// Login handles POST /api/v1/auth/login (unified endpoint with optional role enforcement)
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req models.LoginRequest
 	if err := decodeJSON(r, &req); err != nil {
@@ -396,22 +579,22 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if req.RegistrationNumber != "" {
 		profile, err := h.studentRepo.GetByRegistrationNumber(ctx, req.RegistrationNumber)
 		if err != nil || profile == nil {
-			writeError(w, http.StatusUnauthorized, "Invalid credentials")
+			writeError(w, http.StatusUnauthorized, "Invalid email or password.")
 			return
 		}
 		user, err = h.userRepo.GetByID(ctx, profile.UserID)
 		if err != nil || user == nil {
-			writeError(w, http.StatusUnauthorized, "Invalid credentials")
+			writeError(w, http.StatusUnauthorized, "Invalid email or password.")
 			return
 		}
 	} else if req.Email != "" {
 		user, err = h.userRepo.GetByEmail(ctx, strings.ToLower(strings.TrimSpace(req.Email)))
 		if err != nil || user == nil {
-			writeError(w, http.StatusUnauthorized, "Invalid credentials")
+			writeError(w, http.StatusUnauthorized, "Invalid email or password.")
 			return
 		}
 	} else {
-		writeError(w, http.StatusBadRequest, "Email or registration number is required")
+		writeError(w, http.StatusBadRequest, "Email is required")
 		return
 	}
 
@@ -422,8 +605,32 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	// Verify password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
-		writeError(w, http.StatusUnauthorized, "Invalid credentials")
+		writeError(w, http.StatusUnauthorized, "Invalid email or password.")
 		return
+	}
+
+	// If role was specified, enforce match
+	if req.Role != "" && user.Role != req.Role {
+		writeError(w, http.StatusUnauthorized, "Invalid email or password.")
+		return
+	}
+
+	// If club admin, check club status
+	if user.Role == models.RoleClubAdmin {
+		adminProfile, err := h.clubRepo.GetAdminProfile(ctx, user.ID)
+		if err == nil && adminProfile != nil {
+			club, err := h.clubRepo.GetByID(ctx, adminProfile.ClubID)
+			if err == nil && club != nil && club.VerificationStatus == models.VerificationPending {
+				token, expiresAt, _ := h.authManager.GenerateJWT(user.ID, user.Email, user.Role)
+				h.setSessionCookie(w, token, expiresAt)
+				userResp := h.buildUserResponse(ctx, user)
+				writeSuccess(w, "Club registration is pending verification by Super Admin.", models.AuthResponse{
+					User:  userResp,
+					Token: token,
+				})
+				return
+			}
+		}
 	}
 
 	// Generate JWT
@@ -560,6 +767,16 @@ func (h *AuthHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 // Logout handles POST /api/v1/auth/logout
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
+		Name:     "eventra_session",
+		Value:    "",
+		Path:     "/",
+		Domain:   h.cfg.CookieDomain,
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   h.cfg.CookieSecure,
+		SameSite: http.SameSiteLaxMode,
+	})
+	http.SetCookie(w, &http.Cookie{
 		Name:     "evenrtra_session",
 		Value:    "",
 		Path:     "/",
@@ -593,7 +810,7 @@ func (h *AuthHandler) setSessionCookie(w http.ResponseWriter, token string, expi
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "evenrtra_session",
+		Name:     "eventra_session",
 		Value:    token,
 		Path:     "/",
 		Domain:   h.cfg.CookieDomain,

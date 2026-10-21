@@ -27,11 +27,11 @@ type AuthResponse struct {
 
 // UserResponse is a safe user representation (no password hash)
 type UserResponse struct {
-	ID            string  `json:"id"`
-	Email         string  `json:"email"`
-	Role          string  `json:"role"`
-	IsActive      bool    `json:"is_active"`
-	EmailVerified bool    `json:"email_verified"`
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	Role          string `json:"role"`
+	IsActive      bool   `json:"is_active"`
+	EmailVerified bool   `json:"email_verified"`
 	// Student fields (populated when role is student)
 	FirstName          string `json:"first_name,omitempty"`
 	LastName           string `json:"last_name,omitempty"`
@@ -40,9 +40,9 @@ type UserResponse struct {
 	AcademicSession    string `json:"academic_session,omitempty"`
 	Phone              string `json:"phone,omitempty"`
 	// Club admin fields
-	ClubID             string `json:"club_id,omitempty"`
-	ClubName           string `json:"club_name,omitempty"`
-	ClubStatus         string `json:"club_status,omitempty"`
+	ClubID     string `json:"club_id,omitempty"`
+	ClubName   string `json:"club_name,omitempty"`
+	ClubStatus string `json:"club_status,omitempty"`
 }
 
 // EventListResponse for event listing

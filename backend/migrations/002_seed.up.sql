@@ -1,11 +1,11 @@
 -- 002_seed.up.sql
--- Evenrtra Seed Data: Super Admin & Demo Student Only (Clean Initial State)
+-- Eventra Seed Data: Super Admin & Demo Student Only (Clean Initial State)
 
 -- 1. Insert Super Admin User
 INSERT INTO users (id, email, password_hash, role, is_active, email_verified)
 VALUES (
     '00000000-0000-0000-0000-000000000001',
-    'admin@evenrtra.edu',
+    'admin@eventra.edu',
     '$2a$10$xUeNBQMZ.U3DCiASTnl/k.nttZ/8YHhaL3tFge.CakdW5LPeIT.8G', -- Admin@123456
     'super_admin',
     true,
@@ -16,7 +16,7 @@ VALUES (
 INSERT INTO users (id, email, password_hash, role, is_active, email_verified)
 VALUES (
     '00000000-0000-0000-0000-000000000002',
-    'student@evenrtra.edu',
+    'student@eventra.edu',
     '$2a$10$ou05bBRTJwKomGPIwWFr0ubkrL6YFd2NwKEcgxwFrj/m1xby1GYVe', -- Student@123456
     'student',
     true,

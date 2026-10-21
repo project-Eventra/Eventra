@@ -1,5 +1,5 @@
 /**
- * EVENRTRA Events Engine
+ * EVENTRA Events Engine
  * Catalog, Search, Filtering, Dynamic Countdowns, and Timeline Display
  */
 

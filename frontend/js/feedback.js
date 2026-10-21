@@ -1,5 +1,5 @@
 /**
- * EVENRTRA Feedback Modal & Submission Controller
+ * EVENTRA Feedback Modal & Submission Controller
  */
 
 function initFeedback() {

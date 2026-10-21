@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Event Details — Evenrtra</title>
-  <meta name="description" content="View event schedule, registration requirements, and reserve your spot on Evenrtra.">
+  <title>Event Details — Eventra</title>
+  <meta name="description" content="View event schedule, registration requirements, and reserve your spot on Eventra.">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/animations.css">
 </head>
@@ -143,12 +143,12 @@
               <!-- State C: Not Logged In -->
               <div id="reg-state-guest" style="display: none; text-align: center; padding: 2rem 1rem;">
                 <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🎓</div>
-                <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Student Sign-In Required</h4>
+                <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Student Log In Required</h4>
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-                  Please sign in or create an account with your university student ID to register for this event.
+                  Please log in or sign up with your university student ID to register for this event.
                 </p>
-                <a href="auth.html?mode=login" class="btn btn-primary" style="width: 100%; margin-bottom: 0.75rem;">Sign In</a>
-                <a href="auth.html?mode=register" class="btn btn-glass" style="width: 100%;">Create Student Account</a>
+                <a href="auth.html?action=login&role=student" class="btn btn-primary" style="width: 100%; margin-bottom: 0.75rem;">Log In as Student</a>
+                <a href="auth.html?action=signup&role=student" class="btn btn-glass" style="width: 100%;">Sign Up as Student</a>
               </div>
 
               <!-- State D: Active Registration Form -->
@@ -197,7 +197,7 @@
   <!-- Global Footer -->
   <footer class="footer">
     <div class="container footer-bottom" style="border-top:none;">
-      <div>&copy; 2026 Evenrtra. All rights reserved.</div>
+      <div>&copy; 2026 Eventra. All rights reserved.</div>
       <div style="display:flex; gap:1.5rem;">
         <a href="index.html">Home</a>
         <a href="events.html">Events</a>
@@ -253,7 +253,7 @@
       // Set Title & Banner
       const title = currentEvent.title || currentEvent.name || 'Campus Event';
       const participationType = currentEvent.registration_type || currentEvent.participation_type || 'individual';
-      document.title = `${title} — Evenrtra`;
+      document.title = `${title} — Eventra`;
       document.getElementById('detail-title').innerText = title;
       document.getElementById('detail-club-name').innerText = currentEvent.club_name || 'University Club';
       document.getElementById('detail-category-badge').innerText = currentEvent.category || 'General';

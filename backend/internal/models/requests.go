@@ -39,6 +39,14 @@ type LoginRequest struct {
 	Password string `json:"password"`
 	// Alternative: login with registration number
 	RegistrationNumber string `json:"registration_number"`
+	Role               string `json:"role"`
+}
+
+// SuperAdminRegistrationRequest for authorized super admin signup
+type SuperAdminRegistrationRequest struct {
+	Email        string `json:"email"`
+	Password     string `json:"password"`
+	BootstrapKey string `json:"bootstrap_key"`
 }
 
 // FirebaseAuthRequest for Firebase ID token login
@@ -49,20 +57,20 @@ type FirebaseAuthRequest struct {
 
 // CreateEventRequest for creating an event
 type CreateEventRequest struct {
-	Name                 string  `json:"name"`
-	ShortDescription     string  `json:"short_description"`
-	Description          string  `json:"description"`
-	EventDate            string  `json:"event_date"`
-	RegistrationDeadline string  `json:"registration_deadline"`
-	Venue                string  `json:"venue"`
-	ParticipationType    string  `json:"participation_type"`
-	MinGroupSize         int     `json:"min_group_size"`
-	MaxGroupSize         int     `json:"max_group_size"`
-	MaxParticipants      *int    `json:"max_participants"`
-	HasFee               bool    `json:"has_fee"`
-	RegistrationFee      float64 `json:"registration_fee"`
-	FeeInstructions      string  `json:"fee_instructions"`
-	Rules                string  `json:"rules"`
+	Name                 string                     `json:"name"`
+	ShortDescription     string                     `json:"short_description"`
+	Description          string                     `json:"description"`
+	EventDate            string                     `json:"event_date"`
+	RegistrationDeadline string                     `json:"registration_deadline"`
+	Venue                string                     `json:"venue"`
+	ParticipationType    string                     `json:"participation_type"`
+	MinGroupSize         int                        `json:"min_group_size"`
+	MaxGroupSize         int                        `json:"max_group_size"`
+	MaxParticipants      *int                       `json:"max_participants"`
+	HasFee               bool                       `json:"has_fee"`
+	RegistrationFee      float64                    `json:"registration_fee"`
+	FeeInstructions      string                     `json:"fee_instructions"`
+	Rules                string                     `json:"rules"`
 	CustomFields         []CreateCustomFieldRequest `json:"custom_fields"`
 }
 
@@ -106,18 +114,18 @@ type CreateRegistrationRequest struct {
 
 // CreateGroupRegistrationRequest for group registration
 type CreateGroupRegistrationRequest struct {
-	GroupName        string                   `json:"group_name"`
-	Members          []GroupMemberRequest     `json:"members"`
-	CustomFieldsData map[string]interface{}   `json:"custom_fields_data"`
+	GroupName        string                 `json:"group_name"`
+	Members          []GroupMemberRequest   `json:"members"`
+	CustomFieldsData map[string]interface{} `json:"custom_fields_data"`
 }
 
 // GroupMemberRequest for adding group members
 type GroupMemberRequest struct {
-	MemberName             string                 `json:"member_name"`
-	MemberEmail            string                 `json:"member_email"`
-	MemberPhone            string                 `json:"member_phone"`
-	MemberRegistrationNumber string               `json:"member_registration_number"`
-	CustomFieldsData       map[string]interface{} `json:"custom_fields_data"`
+	MemberName               string                 `json:"member_name"`
+	MemberEmail              string                 `json:"member_email"`
+	MemberPhone              string                 `json:"member_phone"`
+	MemberRegistrationNumber string                 `json:"member_registration_number"`
+	CustomFieldsData         map[string]interface{} `json:"custom_fields_data"`
 }
 
 // FeedbackRequest for submitting feedback
@@ -165,10 +173,10 @@ type UpdateFeedbackRequest struct {
 
 // AdminCreateClubRequest for super admin to add a club
 type AdminCreateClubRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Email       string `json:"email"`
-	Phone       string `json:"phone"`
-	AdminEmail  string `json:"admin_email"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	Email         string `json:"email"`
+	Phone         string `json:"phone"`
+	AdminEmail    string `json:"admin_email"`
 	AdminPassword string `json:"admin_password"`
 }

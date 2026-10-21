@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Super Admin Console — Evenrtra</title>
-  <meta name="description" content="Evenrtra central university administration console for club approvals, student management, and moderation.">
+  <title>Super Admin Console — Eventra</title>
+  <meta name="description" content="Eventra central university administration console for club approvals, student management, and moderation.">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/animations.css">
   <link rel="stylesheet" href="css/dashboard.css">
@@ -307,18 +307,20 @@
         }
 
         tbody.innerHTML = clubs.map(club => {
-          const isApproved = club.is_approved;
+          const isApproved = club.is_approved || club.verification_status === 'approved';
+          const clubEmail = club.contact_email || club.email || '-';
+          const dateStr = club.created_at ? new Date(club.created_at).toLocaleDateString('en-US') : 'Recent';
           return `
             <tr>
               <td><strong>${escapeHtml(club.name)}</strong></td>
               <td><span class="badge badge-purple">${escapeHtml(club.category || 'General')}</span></td>
-              <td>${escapeHtml(club.contact_email || '-')}</td>
+              <td>${escapeHtml(clubEmail)}</td>
               <td>
                 <span class="badge ${isApproved ? 'badge-emerald' : 'badge-amber'}">
                   ${isApproved ? 'Approved ✓' : 'Pending Review'}
                 </span>
               </td>
-              <td>${new Date(club.created_at).toLocaleDateString('en-US')}</td>
+              <td>${dateStr}</td>
               <td>
                 <div class="action-buttons">
                   ${!isApproved ? `

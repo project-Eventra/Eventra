@@ -1,5 +1,5 @@
 /**
- * EVENRTRA Dynamic Navbar & Auth State Controller
+ * EVENTRA Dynamic Navbar & Auth State Controller
  */
 
 function initNavbar() {
@@ -45,8 +45,8 @@ function initNavbar() {
     `;
   } else {
     userActions = `
-      <a href="auth.html?mode=login" class="btn btn-sm btn-glass">Sign In</a>
-      <a href="auth.html?mode=register" class="btn btn-sm btn-primary">Join Evenrtra</a>
+      <a href="auth.html?action=login" class="btn btn-sm btn-glass">Log In</a>
+      <a href="auth.html?action=signup" class="btn btn-sm btn-primary">Sign Up</a>
     `;
   }
 
@@ -55,7 +55,7 @@ function initNavbar() {
       <div class="container navbar-inner">
         <a href="index.html" class="brand-logo">
           <div class="logo-orb"></div>
-          <span>Evenrtra</span>
+          <span>Eventra</span>
           <span class="brand-tag">v1.0</span>
         </a>
 

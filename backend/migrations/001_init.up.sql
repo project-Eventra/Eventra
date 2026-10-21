@@ -1,5 +1,5 @@
 -- 001_init.up.sql
--- Evenrtra Database Schema
+-- Eventra Database Schema
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

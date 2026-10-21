@@ -1,5 +1,5 @@
 -- 002_seed.down.sql
-DELETE FROM feedback WHERE email = 'student@evenrtra.edu';
+DELETE FROM feedback WHERE email = 'student@eventra.edu';
 DELETE FROM registrations WHERE id = 'b0000000-0000-0000-0000-000000000001';
 DELETE FROM events WHERE id IN (
     'a0000000-0000-0000-0000-000000000001',

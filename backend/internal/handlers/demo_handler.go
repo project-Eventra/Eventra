@@ -44,24 +44,28 @@ func GetDemoStore() *DemoStore {
 		// Seed Super Admin
 		adminID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 		adminHash, _ := bcrypt.GenerateFromPassword([]byte("Admin@123456"), bcrypt.DefaultCost)
-		s.users["admin@evenrtra.edu"] = &models.User{
+		adminUser := &models.User{
 			ID:           adminID,
-			Email:        "admin@evenrtra.edu",
+			Email:        "admin@eventra.edu",
 			PasswordHash: string(adminHash),
 			Role:         models.RoleSuperAdmin,
 			IsActive:     true,
 		}
+		s.users["admin@eventra.edu"] = adminUser
+		s.users["admin@evenrtra.edu"] = adminUser
 
 		// Seed Student
 		studentID := uuid.MustParse("00000000-0000-0000-0000-000000000002")
 		studentHash, _ := bcrypt.GenerateFromPassword([]byte("Student@123456"), bcrypt.DefaultCost)
-		s.users["student@evenrtra.edu"] = &models.User{
+		studentUser := &models.User{
 			ID:           studentID,
-			Email:        "student@evenrtra.edu",
+			Email:        "student@eventra.edu",
 			PasswordHash: string(studentHash),
 			Role:         models.RoleStudent,
 			IsActive:     true,
 		}
+		s.users["student@eventra.edu"] = studentUser
+		s.users["student@evenrtra.edu"] = studentUser
 		s.students[studentID] = &models.StudentProfile{
 			UserID:             studentID,
 			FirstName:          "Alex",
@@ -85,6 +89,7 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]interface{}{
 			"status": "ok",
+			"app":    "Eventra",
 			"mode":   "local_in_memory_ready",
 			"note":   "PostgreSQL not connected locally; running in interactive demo mode",
 		})
@@ -216,6 +221,7 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 
 	// Auth Endpoints
 	r.Route("/auth", func(authRouter chi.Router) {
+		// Unified login
 		authRouter.Post("/login", func(w http.ResponseWriter, r *http.Request) {
 			var req models.LoginRequest
 			if err := decodeJSON(r, &req); err != nil {
@@ -229,20 +235,94 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 			store.mu.RUnlock()
 
 			if !exists {
-				writeError(w, http.StatusUnauthorized, "Invalid email or password")
+				writeError(w, http.StatusUnauthorized, "Invalid email or password.")
 				return
 			}
 
 			if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
-				writeError(w, http.StatusUnauthorized, "Invalid email or password")
+				writeError(w, http.StatusUnauthorized, "Invalid email or password.")
+				return
+			}
+
+			if req.Role != "" && user.Role != req.Role {
+				writeError(w, http.StatusUnauthorized, "Invalid email or password.")
 				return
 			}
 
 			token, expiresAt, _ := authManager.GenerateJWT(user.ID, user.Email, user.Role)
 
-			// Cookie
 			http.SetCookie(w, &http.Cookie{
-				Name:     "evenrtra_session",
+				Name:     "eventra_session",
+				Value:    token,
+				Path:     "/",
+				Expires:  expiresAt,
+				HttpOnly: true,
+				SameSite: http.SameSiteLaxMode,
+			})
+
+			name := user.Email
+			var studentID, dept, clubName, clubStatus string
+			store.mu.RLock()
+			if st, ok := store.students[user.ID]; ok {
+				name = st.FirstName + " " + st.LastName
+				studentID = st.RegistrationNumber
+				dept = st.Department
+			}
+			for _, cl := range store.clubs {
+				if strings.EqualFold(cl.Email, user.Email) {
+					clubName = cl.Name
+					clubStatus = cl.VerificationStatus
+					break
+				}
+			}
+			store.mu.RUnlock()
+
+			msg := "Login successful"
+			if user.Role == models.RoleClubAdmin && clubStatus == "pending" {
+				msg = "Club registration is pending verification by Super Admin."
+			}
+
+			writeSuccess(w, msg, map[string]interface{}{
+				"token": token,
+				"user": map[string]interface{}{
+					"id":          user.ID,
+					"email":       user.Email,
+					"role":        user.Role,
+					"name":        name,
+					"student_id":  studentID,
+					"department":  dept,
+					"club_name":   clubName,
+					"club_status": clubStatus,
+				},
+			})
+		})
+
+		// Role-specific login endpoints
+		authRouter.Post("/login/student", func(w http.ResponseWriter, r *http.Request) {
+			var req models.LoginRequest
+			if err := decodeJSON(r, &req); err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid request body")
+				return
+			}
+
+			store.mu.RLock()
+			email := strings.ToLower(strings.TrimSpace(req.Email))
+			user, exists := store.users[email]
+			store.mu.RUnlock()
+
+			if !exists || user.Role != models.RoleStudent {
+				writeError(w, http.StatusUnauthorized, "Invalid email or password.")
+				return
+			}
+
+			if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+				writeError(w, http.StatusUnauthorized, "Invalid email or password.")
+				return
+			}
+
+			token, expiresAt, _ := authManager.GenerateJWT(user.ID, user.Email, user.Role)
+			http.SetCookie(w, &http.Cookie{
+				Name:     "eventra_session",
 				Value:    token,
 				Path:     "/",
 				Expires:  expiresAt,
@@ -273,64 +353,31 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 			})
 		})
 
-		// Google / Gmail Sign-In & Instant Registration
-		authRouter.Post("/google", func(w http.ResponseWriter, r *http.Request) {
-			var req struct {
-				Email string `json:"email"`
-				Name  string `json:"name"`
-			}
+		authRouter.Post("/login/club", func(w http.ResponseWriter, r *http.Request) {
+			var req models.LoginRequest
 			if err := decodeJSON(r, &req); err != nil {
 				writeError(w, http.StatusBadRequest, "Invalid request body")
 				return
 			}
 
+			store.mu.RLock()
 			email := strings.ToLower(strings.TrimSpace(req.Email))
-			if email == "" {
-				writeError(w, http.StatusBadRequest, "Gmail address is required")
+			user, exists := store.users[email]
+			store.mu.RUnlock()
+
+			if !exists || user.Role != models.RoleClubAdmin {
+				writeError(w, http.StatusUnauthorized, "Invalid email or password.")
 				return
 			}
 
-			store.mu.Lock()
-			user, exists := store.users[email]
-			if !exists {
-				// Auto-create student account with Google
-				newID := uuid.New()
-				user = &models.User{
-					ID:           newID,
-					Email:        email,
-					PasswordHash: "google_authenticated",
-					Role:         models.RoleStudent,
-					IsActive:     true,
-				}
-				store.users[email] = user
-
-				firstName := "Student"
-				lastName := ""
-				if req.Name != "" {
-					parts := strings.SplitN(strings.TrimSpace(req.Name), " ", 2)
-					firstName = parts[0]
-					if len(parts) > 1 {
-						lastName = parts[1]
-					}
-				} else {
-					firstName = strings.Split(email, "@")[0]
-				}
-
-				store.students[newID] = &models.StudentProfile{
-					UserID:             newID,
-					FirstName:          firstName,
-					LastName:           lastName,
-					RegistrationNumber: "GML-" + strings.ToUpper(newID.String()[:8]),
-					Department:         "General Studies",
-					AcademicSession:    "2024-2028",
-				}
+			if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+				writeError(w, http.StatusUnauthorized, "Invalid email or password.")
+				return
 			}
-			store.mu.Unlock()
 
 			token, expiresAt, _ := authManager.GenerateJWT(user.ID, user.Email, user.Role)
-
 			http.SetCookie(w, &http.Cookie{
-				Name:     "evenrtra_session",
+				Name:     "eventra_session",
 				Value:    token,
 				Path:     "/",
 				Expires:  expiresAt,
@@ -338,75 +385,74 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 				SameSite: http.SameSiteLaxMode,
 			})
 
-			displayName := user.Email
-			var studentID, dept string
+			var clubName, clubStatus string
 			store.mu.RLock()
-			if st, ok := store.students[user.ID]; ok {
-				displayName = st.FirstName
-				if st.LastName != "" {
-					displayName += " " + st.LastName
+			for _, cl := range store.clubs {
+				if strings.EqualFold(cl.Email, user.Email) {
+					clubName = cl.Name
+					clubStatus = cl.VerificationStatus
+					break
 				}
-				studentID = st.RegistrationNumber
-				dept = st.Department
 			}
 			store.mu.RUnlock()
 
-			writeSuccess(w, "Google sign-in successful", map[string]interface{}{
+			msg := "Login successful"
+			if clubStatus == "pending" {
+				msg = "Club registration is pending verification by Super Admin."
+			}
+
+			writeSuccess(w, msg, map[string]interface{}{
 				"token": token,
 				"user": map[string]interface{}{
-					"id":         user.ID,
-					"email":      user.Email,
-					"role":       user.Role,
-					"name":       displayName,
-					"student_id": studentID,
-					"department": dept,
+					"id":          user.ID,
+					"email":       user.Email,
+					"role":        user.Role,
+					"name":        clubName,
+					"club_name":   clubName,
+					"club_status": clubStatus,
 				},
 			})
 		})
 
-		// Firebase endpoint alias
-		authRouter.Post("/firebase", func(w http.ResponseWriter, r *http.Request) {
-			var req struct {
-				Email string `json:"email"`
-				Name  string `json:"name"`
+		authRouter.Post("/login/super-admin", func(w http.ResponseWriter, r *http.Request) {
+			var req models.LoginRequest
+			if err := decodeJSON(r, &req); err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid request body")
+				return
 			}
-			decodeJSON(r, &req)
-			if req.Email == "" {
-				req.Email = "student@gmail.com"
-			}
-			// Forward to Google auth handler logic
-			email := strings.ToLower(strings.TrimSpace(req.Email))
-			store.mu.Lock()
-			user, exists := store.users[email]
-			if !exists {
-				newID := uuid.New()
-				user = &models.User{
-					ID:           newID,
-					Email:        email,
-					PasswordHash: "google_authenticated",
-					Role:         models.RoleStudent,
-					IsActive:     true,
-				}
-				store.users[email] = user
-				store.students[newID] = &models.StudentProfile{
-					UserID:             newID,
-					FirstName:          "Google",
-					LastName:           "User",
-					RegistrationNumber: "GML-" + strings.ToUpper(newID.String()[:8]),
-					Department:         "General Studies",
-					AcademicSession:    "2024-2028",
-				}
-			}
-			store.mu.Unlock()
 
-			token, _, _ := authManager.GenerateJWT(user.ID, user.Email, user.Role)
-			writeSuccess(w, "Authenticated via Google", map[string]interface{}{
+			store.mu.RLock()
+			email := strings.ToLower(strings.TrimSpace(req.Email))
+			user, exists := store.users[email]
+			store.mu.RUnlock()
+
+			if !exists || user.Role != models.RoleSuperAdmin {
+				writeError(w, http.StatusUnauthorized, "Invalid email or password.")
+				return
+			}
+
+			if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+				writeError(w, http.StatusUnauthorized, "Invalid email or password.")
+				return
+			}
+
+			token, expiresAt, _ := authManager.GenerateJWT(user.ID, user.Email, user.Role)
+			http.SetCookie(w, &http.Cookie{
+				Name:     "eventra_session",
+				Value:    token,
+				Path:     "/",
+				Expires:  expiresAt,
+				HttpOnly: true,
+				SameSite: http.SameSiteLaxMode,
+			})
+
+			writeSuccess(w, "Login successful", map[string]interface{}{
 				"token": token,
 				"user": map[string]interface{}{
 					"id":    user.ID,
 					"email": user.Email,
 					"role":  user.Role,
-					"name":  user.Email,
+					"name":  "Super Admin",
 				},
 			})
 		})
@@ -419,8 +465,12 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 			}
 
 			email := strings.ToLower(strings.TrimSpace(req.Email))
-			if email == "" || req.Password == "" {
-				writeError(w, http.StatusBadRequest, "Email and password are required")
+			if req.FirstName == "" || req.LastName == "" || email == "" || req.RegistrationNumber == "" || req.AcademicSession == "" || req.Department == "" || req.Password == "" {
+				writeError(w, http.StatusBadRequest, "All fields are required")
+				return
+			}
+			if len(req.Password) < 8 {
+				writeError(w, http.StatusBadRequest, "Password must be at least 8 characters")
 				return
 			}
 
@@ -429,6 +479,14 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 				store.mu.Unlock()
 				writeError(w, http.StatusConflict, "Email already registered")
 				return
+			}
+
+			for _, st := range store.students {
+				if strings.EqualFold(st.RegistrationNumber, req.RegistrationNumber) {
+					store.mu.Unlock()
+					writeError(w, http.StatusConflict, "Registration number already exists")
+					return
+				}
 			}
 
 			hash, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -442,50 +500,37 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 			}
 			store.users[email] = user
 
-			firstName := req.FirstName
-			lastName := req.LastName
-			if firstName == "" && req.Name != "" {
-				parts := strings.SplitN(req.Name, " ", 2)
-				firstName = parts[0]
-				if len(parts) > 1 {
-					lastName = parts[1]
-				} else {
-					lastName = parts[0]
-				}
-			}
-			regNo := req.RegistrationNumber
-			if regNo == "" && req.StudentID != "" {
-				regNo = req.StudentID
-			}
-
 			store.students[newID] = &models.StudentProfile{
 				UserID:             newID,
-				FirstName:          firstName,
-				LastName:           lastName,
-				RegistrationNumber: regNo,
+				FirstName:          req.FirstName,
+				LastName:           req.LastName,
+				RegistrationNumber: req.RegistrationNumber,
 				Department:         req.Department,
-				AcademicSession:    "2024-2028",
+				AcademicSession:    req.AcademicSession,
 			}
 			store.mu.Unlock()
 
 			token, expiresAt, _ := authManager.GenerateJWT(newID, email, models.RoleStudent)
 			http.SetCookie(w, &http.Cookie{
-				Name:     "evenrtra_session",
+				Name:     "eventra_session",
 				Value:    token,
 				Path:     "/",
 				Expires:  expiresAt,
 				HttpOnly: true,
 			})
 
-			writeCreated(w, "Account created", map[string]interface{}{
+			writeCreated(w, "Student account created successfully", map[string]interface{}{
 				"token": token,
 				"user": map[string]interface{}{
-					"id":         newID,
-					"email":      email,
-					"role":       models.RoleStudent,
-					"name":       firstName + " " + lastName,
-					"student_id": regNo,
-					"department": req.Department,
+					"id":                  newID,
+					"email":               email,
+					"role":                models.RoleStudent,
+					"name":                req.FirstName + " " + req.LastName,
+					"first_name":          req.FirstName,
+					"last_name":           req.LastName,
+					"registration_number": req.RegistrationNumber,
+					"department":          req.Department,
+					"academic_session":    req.AcademicSession,
 				},
 			})
 		})
@@ -497,7 +542,15 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 				return
 			}
 
-			email := req.Email
+			cName := strings.TrimSpace(req.ClubName)
+			if cName == "" && req.Name != "" {
+				cName = req.Name
+			}
+			cDesc := strings.TrimSpace(req.ClubDescription)
+			if cDesc == "" && req.Description != "" {
+				cDesc = req.Description
+			}
+			email := strings.ToLower(strings.TrimSpace(req.Email))
 			if email == "" && req.ContactEmail != "" {
 				email = req.ContactEmail
 			}
@@ -505,12 +558,23 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 			if pass == "" && req.AdminPassword != "" {
 				pass = req.AdminPassword
 			}
-			cName := req.ClubName
-			if cName == "" && req.Name != "" {
-				cName = req.Name
+
+			if cName == "" || cDesc == "" || email == "" || pass == "" {
+				writeError(w, http.StatusBadRequest, "All fields are required")
+				return
+			}
+			if len(pass) < 8 {
+				writeError(w, http.StatusBadRequest, "Password must be at least 8 characters")
+				return
 			}
 
 			store.mu.Lock()
+			if _, exists := store.users[email]; exists {
+				store.mu.Unlock()
+				writeError(w, http.StatusConflict, "Email already registered")
+				return
+			}
+
 			newUID := uuid.New()
 			newCID := uuid.New()
 			hash, _ := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
@@ -522,45 +586,108 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 				IsActive:     true,
 			}
 			store.users[email] = user
-			var descPtr *string
-			if req.Description != "" {
-				descPtr = &req.Description
-			}
 			store.clubs[newCID] = &models.Club{
 				ID:                 newCID,
 				Name:               cName,
-				Category:           req.Category,
-				Description:        descPtr,
+				Description:        &cDesc,
 				Email:              email,
-				VerificationStatus: "approved",
+				VerificationStatus: "pending",
 				IsActive:           true,
 			}
 			store.mu.Unlock()
 
 			token, expiresAt, _ := authManager.GenerateJWT(newUID, email, models.RoleClubAdmin)
 			http.SetCookie(w, &http.Cookie{
-				Name:     "evenrtra_session",
+				Name:     "eventra_session",
 				Value:    token,
 				Path:     "/",
 				Expires:  expiresAt,
 				HttpOnly: true,
 			})
 
-			writeCreated(w, "Club application registered", map[string]interface{}{
+			writeCreated(w, "Club registration submitted. Pending admin verification.", map[string]interface{}{
 				"token": token,
 				"user": map[string]interface{}{
-					"id":        newUID,
-					"email":     email,
-					"role":      models.RoleClubAdmin,
-					"name":      cName,
-					"club_name": cName,
+					"id":          newUID,
+					"email":       email,
+					"role":        models.RoleClubAdmin,
+					"name":        cName,
+					"club_name":   cName,
+					"club_status": "pending",
+				},
+			})
+		})
+
+		authRouter.Post("/register/super-admin", func(w http.ResponseWriter, r *http.Request) {
+			var req models.SuperAdminRegistrationRequest
+			if err := decodeJSON(r, &req); err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid request body")
+				return
+			}
+
+			bootstrapKey := req.BootstrapKey
+			if bootstrapKey == "" {
+				bootstrapKey = r.Header.Get("X-Bootstrap-Key")
+			}
+
+			expectedKey := "eventra-super-admin-secret-2026"
+			if bootstrapKey == "" || (bootstrapKey != expectedKey && bootstrapKey != "evenrtra-super-admin-secret-2026") {
+				writeError(w, http.StatusForbidden, "Super Admin registration is restricted. A valid bootstrap authorization key is required.")
+				return
+			}
+
+			email := strings.ToLower(strings.TrimSpace(req.Email))
+			if email == "" || req.Password == "" {
+				writeError(w, http.StatusBadRequest, "Email and password are required")
+				return
+			}
+			if len(req.Password) < 8 {
+				writeError(w, http.StatusBadRequest, "Password must be at least 8 characters")
+				return
+			}
+
+			store.mu.Lock()
+			if _, exists := store.users[email]; exists {
+				store.mu.Unlock()
+				writeError(w, http.StatusConflict, "Email already registered")
+				return
+			}
+
+			newUID := uuid.New()
+			hash, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+			user := &models.User{
+				ID:           newUID,
+				Email:        email,
+				PasswordHash: string(hash),
+				Role:         models.RoleSuperAdmin,
+				IsActive:     true,
+			}
+			store.users[email] = user
+			store.mu.Unlock()
+
+			token, expiresAt, _ := authManager.GenerateJWT(newUID, email, models.RoleSuperAdmin)
+			http.SetCookie(w, &http.Cookie{
+				Name:     "eventra_session",
+				Value:    token,
+				Path:     "/",
+				Expires:  expiresAt,
+				HttpOnly: true,
+			})
+
+			writeCreated(w, "Super Admin account created successfully", map[string]interface{}{
+				"token": token,
+				"user": map[string]interface{}{
+					"id":    newUID,
+					"email": email,
+					"role":  models.RoleSuperAdmin,
+					"name":  "Super Admin",
 				},
 			})
 		})
 
 		authRouter.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
 			http.SetCookie(w, &http.Cookie{
-				Name:     "evenrtra_session",
+				Name:     "eventra_session",
 				Value:    "",
 				Path:     "/",
 				MaxAge:   -1,
@@ -673,12 +800,121 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 		adminRouter.Get("/clubs", func(w http.ResponseWriter, r *http.Request) {
 			store.mu.RLock()
 			defer store.mu.RUnlock()
-			var list []models.Club
+			var list []map[string]interface{}
 			for _, c := range store.clubs {
-				list = append(list, *c)
+				list = append(list, map[string]interface{}{
+					"id":                  c.ID,
+					"name":                c.Name,
+					"category":            c.Category,
+					"contact_email":       c.Email,
+					"email":               c.Email,
+					"verification_status": c.VerificationStatus,
+					"is_approved":         c.VerificationStatus == "approved",
+					"created_at":          c.CreatedAt,
+				})
 			}
 			writeSuccess(w, "", list)
 		})
+
+		adminRouter.Post("/clubs/{id}/approve", func(w http.ResponseWriter, r *http.Request) {
+			idStr := chi.URLParam(r, "id")
+			id, err := uuid.Parse(idStr)
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid club ID")
+				return
+			}
+
+			store.mu.Lock()
+			defer store.mu.Unlock()
+			c, exists := store.clubs[id]
+			if !exists {
+				writeError(w, http.StatusNotFound, "Club not found")
+				return
+			}
+
+			c.VerificationStatus = "approved"
+			writeSuccess(w, "Club application approved successfully", nil)
+		})
+
+		adminRouter.Post("/clubs/{id}/reject", func(w http.ResponseWriter, r *http.Request) {
+			idStr := chi.URLParam(r, "id")
+			id, err := uuid.Parse(idStr)
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid club ID")
+				return
+			}
+
+			store.mu.Lock()
+			defer store.mu.Unlock()
+			c, exists := store.clubs[id]
+			if !exists {
+				writeError(w, http.StatusNotFound, "Club not found")
+				return
+			}
+
+			c.VerificationStatus = "rejected"
+			writeSuccess(w, "Club application rejected", nil)
+		})
+
+		adminRouter.Delete("/clubs/{id}", func(w http.ResponseWriter, r *http.Request) {
+			idStr := chi.URLParam(r, "id")
+			id, err := uuid.Parse(idStr)
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid club ID")
+				return
+			}
+
+			store.mu.Lock()
+			defer store.mu.Unlock()
+			delete(store.clubs, id)
+			writeSuccess(w, "Club removed successfully", nil)
+		})
+
+		adminRouter.Get("/students", func(w http.ResponseWriter, r *http.Request) {
+			store.mu.RLock()
+			defer store.mu.RUnlock()
+			var list []map[string]interface{}
+			for _, s := range store.students {
+				email := ""
+				for em, u := range store.users {
+					if u.ID == s.UserID {
+						email = em
+						break
+					}
+				}
+				list = append(list, map[string]interface{}{
+					"id":         s.UserID,
+					"name":       s.FirstName + " " + s.LastName,
+					"user_name":  s.FirstName + " " + s.LastName,
+					"student_id": s.RegistrationNumber,
+					"department": s.Department,
+					"email":      email,
+					"created_at": time.Now(),
+				})
+			}
+			writeSuccess(w, "", list)
+		})
+
+		adminRouter.Delete("/students/{id}", func(w http.ResponseWriter, r *http.Request) {
+			idStr := chi.URLParam(r, "id")
+			id, err := uuid.Parse(idStr)
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid student ID")
+				return
+			}
+
+			store.mu.Lock()
+			defer store.mu.Unlock()
+			delete(store.students, id)
+			for em, u := range store.users {
+				if u.ID == id {
+					delete(store.users, em)
+					break
+				}
+			}
+			writeSuccess(w, "Student removed successfully", nil)
+		})
+
 		adminRouter.Get("/events", func(w http.ResponseWriter, r *http.Request) {
 			store.mu.RLock()
 			defer store.mu.RUnlock()
@@ -688,6 +924,21 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 			}
 			writeSuccess(w, "", list)
 		})
+
+		adminRouter.Delete("/events/{id}", func(w http.ResponseWriter, r *http.Request) {
+			idStr := chi.URLParam(r, "id")
+			id, err := uuid.Parse(idStr)
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid event ID")
+				return
+			}
+
+			store.mu.Lock()
+			defer store.mu.Unlock()
+			delete(store.events, id)
+			writeSuccess(w, "Event removed successfully", nil)
+		})
+
 		adminRouter.Get("/feedback", func(w http.ResponseWriter, r *http.Request) {
 			store.mu.RLock()
 			defer store.mu.RUnlock()

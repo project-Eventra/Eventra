@@ -1,9 +1,9 @@
-# EVENRTRA
+# EVENTRA
 
 > **"All clubs/events revolving around one platform"**  
 > *Innovation, collaboration and leadership*
 
-Evenrtra is a university club and event management web application. It centralizes student societies, digital event registrations, attendee passes with QR verification, waitlists, custom application questions, and administration moderation into a unified web application.
+Eventra is a university club and event management web application. It centralizes student societies, digital event registrations, attendee passes with QR verification, waitlists, custom application questions, and administration moderation into a unified web application.
 
 ---
 
@@ -22,7 +22,7 @@ Evenrtra is a university club and event management web application. It centraliz
 ## 🚀 Key Features
 
 1. **Revolving Campus Orbital Showcase**:
-   - Dynamic 3D CSS planetarium / orbit visualization representing university clubs rotating around the central Evenrtra Core.
+   - Dynamic 3D CSS planetarium / orbit visualization representing university clubs rotating around the central Eventra Core.
 2. **Event Registration Engine**:
    - Individual & group/team registration support.
    - Dynamic custom registration questions builder (text, numbers, emails, selects).
@@ -51,18 +51,18 @@ Seed data includes active accounts ready for immediate testing:
 
 | Role | Email | Password | Access Level |
 |---|---|---|---|
-| **Super Admin** | `admin@evenrtra.edu` | `Admin@123456` | Full University Admin Console |
-| **Robotics Club** | `robotics@evenrtra.edu` | `Club@123456` | Club Management Portal |
-| **IEEE Student Branch** | `ieee@evenrtra.edu` | `Club@123456` | Club Management Portal |
-| **Drama Guild** | `drama@evenrtra.edu` | `Club@123456` | Club Management Portal |
-| **Student** | `student@evenrtra.edu` | `Student@123456` | Student Ticket Portal |
+| **Super Admin** | `admin@eventra.edu` | `Admin@123456` | Full University Admin Console |
+| **Robotics Club** | `robotics@eventra.edu` | `Club@123456` | Club Management Portal |
+| **IEEE Student Branch** | `ieee@eventra.edu` | `Club@123456` | Club Management Portal |
+| **Drama Guild** | `drama@eventra.edu` | `Club@123456` | Club Management Portal |
+| **Student** | `student@eventra.edu` | `Student@123456` | Student Ticket Portal |
 
 ---
 
 ## 📁 Directory Structure
 
 ```
-evenrtra/
+eventra/
 ├── render.yaml                    # Render deployment blueprint
 ├── .env.example                   # Environment configuration template
 ├── README.md                      # Complete documentation
@@ -144,4 +144,4 @@ Open `http://localhost:8080` in your web browser.
 1. Push this repository to GitHub or GitLab.
 2. Log in to [Render](https://render.com).
 3. Click **New +** -> **Blueprint**.
-4. Connect this repository. Render will automatically detect `render.yaml`, provision a managed PostgreSQL database, build the Go application, run migrations, and launch Evenrtra live!
+4. Connect this repository. Render will automatically detect `render.yaml`, provision a managed PostgreSQL database, build the Go application, run migrations, and launch Eventra live!

@@ -1,5 +1,5 @@
 /**
- * EVENRTRA API Client
+ * EVENTRA API Client
  * Centralized request helper with credentials, JWT header fallback, and response normalization
  */
 
@@ -9,12 +9,12 @@ const API_BASE = window.location.origin.startsWith('file:')
 
 class APIClient {
   constructor() {
-    this.tokenKey = 'evenrtra_jwt_token';
-    this.userKey = 'evenrtra_user_data';
+    this.tokenKey = 'eventra_jwt_token';
+    this.userKey = 'eventra_user_data';
   }
 
   getToken() {
-    return localStorage.getItem(this.tokenKey);
+    return localStorage.getItem(this.tokenKey) || localStorage.getItem('evenrtra_jwt_token');
   }
 
   setToken(token) {
@@ -22,12 +22,13 @@ class APIClient {
       localStorage.setItem(this.tokenKey, token);
     } else {
       localStorage.removeItem(this.tokenKey);
+      localStorage.removeItem('evenrtra_jwt_token');
     }
   }
 
   getUser() {
     try {
-      const data = localStorage.getItem(this.userKey);
+      const data = localStorage.getItem(this.userKey) || localStorage.getItem('evenrtra_user_data');
       return data ? JSON.parse(data) : null;
     } catch {
       return null;
@@ -39,12 +40,15 @@ class APIClient {
       localStorage.setItem(this.userKey, JSON.stringify(user));
     } else {
       localStorage.removeItem(this.userKey);
+      localStorage.removeItem('evenrtra_user_data');
     }
   }
 
   clearAuth() {
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem('evenrtra_jwt_token');
     localStorage.removeItem(this.userKey);
+    localStorage.removeItem('evenrtra_user_data');
   }
 
   async request(endpoint, options = {}) {
@@ -83,6 +87,7 @@ class APIClient {
         if (res.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/firebase')) {
           this.clearAuth();
           // Dispatch auth expired event
+          window.dispatchEvent(new CustomEvent('eventra:auth-expired'));
           window.dispatchEvent(new CustomEvent('evenrtra:auth-expired'));
         }
 

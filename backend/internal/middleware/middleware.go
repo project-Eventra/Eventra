@@ -35,7 +35,10 @@ func AuthMiddleware(authManager *auth.Manager) func(http.Handler) http.Handler {
 			var tokenString string
 
 			// Try cookie first (preferred for web)
-			cookie, err := r.Cookie("evenrtra_session")
+			cookie, err := r.Cookie("eventra_session")
+			if err != nil || cookie.Value == "" {
+				cookie, err = r.Cookie("evenrtra_session")
+			}
 			if err == nil && cookie.Value != "" {
 				tokenString = cookie.Value
 			}
@@ -77,7 +80,10 @@ func OptionalAuth(authManager *auth.Manager) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var tokenString string
 
-			cookie, err := r.Cookie("evenrtra_session")
+			cookie, err := r.Cookie("eventra_session")
+			if err != nil || cookie.Value == "" {
+				cookie, err = r.Cookie("evenrtra_session")
+			}
 			if err == nil && cookie.Value != "" {
 				tokenString = cookie.Value
 			}

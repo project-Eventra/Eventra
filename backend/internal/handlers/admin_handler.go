@@ -17,14 +17,14 @@ import (
 
 // AdminHandler handles super admin endpoints
 type AdminHandler struct {
-	userRepo    *repositories.UserRepository
-	studentRepo *repositories.StudentRepository
-	clubRepo    *repositories.ClubRepository
-	eventRepo   *repositories.EventRepository
-	regRepo     *repositories.RegistrationRepository
+	userRepo     *repositories.UserRepository
+	studentRepo  *repositories.StudentRepository
+	clubRepo     *repositories.ClubRepository
+	eventRepo    *repositories.EventRepository
+	regRepo      *repositories.RegistrationRepository
 	feedbackRepo *repositories.FeedbackRepository
-	auditRepo   *repositories.AuditLogRepository
-	pool        *pgxpool.Pool
+	auditRepo    *repositories.AuditLogRepository
+	pool         *pgxpool.Pool
 }
 
 // NewAdminHandler creates a new admin handler
