@@ -112,11 +112,70 @@
 
   </div>
 
+  <!-- Digital Pass Modal -->
+  <div class="modal-overlay" id="ticket-modal">
+    <div class="modal-box" style="max-width: 480px; text-align: center;">
+      <button class="modal-close-btn" onclick="closeTicketModal()">&times;</button>
+      
+      <div style="margin-bottom: 1rem;">
+        <span class="badge badge-purple" id="modal-pass-club">University Club</span>
+        <h3 id="modal-pass-event" style="margin-top: 0.5rem; margin-bottom: 0.25rem; font-size: 1.35rem;">Campus Event</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted);" id="modal-pass-type">Attendee Pass</p>
+      </div>
+
+      <!-- Scannable High-Res QR Code Container -->
+      <div style="background: #ffffff; padding: 1.25rem; border-radius: 12px; display: inline-block; box-shadow: 0 8px 30px rgba(0,0,0,0.5); margin: 0 auto 1.25rem;">
+        <img id="modal-pass-qr-img" src="" alt="Attendee QR Pass" width="220" height="220" style="display: block; border-radius: 4px; margin: 0 auto;">
+        <div style="font-family: var(--font-mono); font-weight: 800; color: #070913; font-size: 0.95rem; margin-top: 0.5rem; letter-spacing: 0.1em;" id="modal-pass-code">
+          PASS: -
+        </div>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem; text-align: left; margin-bottom: 1.25rem; font-size: 0.88rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div>
+          <span style="color: var(--text-dim); font-size: 0.75rem; display: block;">ATTENDEE NAME</span>
+          <strong id="modal-pass-student" style="color: var(--text-main);">-</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-dim); font-size: 0.75rem; display: block;">STUDENT ID</span>
+          <strong id="modal-pass-id" style="color: var(--accent-cyan); font-family: var(--font-mono);">-</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-dim); font-size: 0.75rem; display: block;">EMAIL</span>
+          <span id="modal-pass-email" style="color: var(--text-muted); word-break: break-all;">-</span>
+        </div>
+        <div>
+          <span style="color: var(--text-dim); font-size: 0.75rem; display: block;">STATUS</span>
+          <span id="modal-pass-status" class="badge badge-emerald">CONFIRMED</span>
+        </div>
+        <div>
+          <span style="color: var(--text-dim); font-size: 0.75rem; display: block;">VENUE</span>
+          <span id="modal-pass-venue" style="color: var(--text-main);">-</span>
+        </div>
+        <div>
+          <span style="color: var(--text-dim); font-size: 0.75rem; display: block;">EVENT DATE</span>
+          <span id="modal-pass-date" style="color: var(--text-main);">-</span>
+        </div>
+      </div>
+
+      <p style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 1.25rem;">
+        📸 Gate entrance staff can scan this QR code with any phone camera or barcode reader to verify attendee credentials.
+      </p>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: center;">
+        <button type="button" class="btn btn-glass" onclick="closeTicketModal()">Close</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ Print Pass</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/feedback.js"></script>
   <script>
+    let myRegistrations = [];
+
     document.addEventListener('DOMContentLoaded', async () => {
       const user = window.api.getUser();
       if (!user) {
@@ -134,15 +193,17 @@
 
     async function loadRegistrations() {
       const list = document.getElementById('tickets-list');
+      const user = window.api.getUser() || {};
+
       try {
         const res = await window.api.get('/student/registrations');
-        const registrations = res.data || [];
+        myRegistrations = res.data || [];
 
-        document.getElementById('stat-total-reg').innerText = registrations.length;
-        document.getElementById('stat-upcoming-reg').innerText = registrations.filter(r => new Date(r.event_start_time || r.start_time) > new Date()).length;
-        document.getElementById('stat-confirmed-reg').innerText = registrations.filter(r => r.status === 'confirmed').length;
+        document.getElementById('stat-total-reg').innerText = myRegistrations.length;
+        document.getElementById('stat-upcoming-reg').innerText = myRegistrations.filter(r => new Date(r.event_date || r.event_start_time || r.start_time || r.created_at) > new Date()).length;
+        document.getElementById('stat-confirmed-reg').innerText = myRegistrations.filter(r => r.status === 'confirmed').length;
 
-        if (registrations.length === 0) {
+        if (myRegistrations.length === 0) {
           list.innerHTML = `
             <div class="glass-card" style="text-align: center; padding: 4rem 2rem;">
               <div style="font-size: 3rem; margin-bottom: 0.75rem;">🎟️</div>
@@ -156,16 +217,40 @@
           return;
         }
 
-        list.innerHTML = registrations.map(reg => {
-          const eventDate = new Date(reg.event_start_time || reg.start_time || reg.created_at).toLocaleDateString('en-US', {
+        list.innerHTML = myRegistrations.map((reg, idx) => {
+          const rawDate = reg.event_date || reg.event_start_time || reg.start_time || reg.created_at;
+          const eventDate = new Date(rawDate).toLocaleDateString('en-US', {
             weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
           });
-          const eventTime = new Date(reg.event_start_time || reg.start_time || reg.created_at).toLocaleTimeString('en-US', {
+          const eventTime = new Date(rawDate).toLocaleTimeString('en-US', {
             hour: '2-digit', minute: '2-digit'
           });
 
           const regCode = (reg.id || 'PASS').substring(0, 8).toUpperCase();
-          const qrSvg = generateSimpleQRCodeSVG(regCode);
+          const studentName = reg.student_name || user.name || (user.email ? user.email.split('@')[0] : 'Attendee');
+          const studentId = reg.student_reg_no || reg.student_id || user.student_id || user.registration_number || 'N/A';
+          const studentEmail = reg.student_email || reg.email || user.email || 'N/A';
+          const eventName = reg.event_name || reg.event_title || 'Campus Event';
+          const clubName = reg.club_name || 'University Club';
+          const venue = reg.venue || 'Campus Auditorium';
+          const teamName = reg.team_name ? `Team: ${reg.team_name}` : 'Individual Pass';
+
+          // Detailed scannable pass credentials string
+          const qrData = [
+            `🎓 EVENTRA CAMPUS PASS`,
+            `Event: ${eventName}`,
+            `Club: ${clubName}`,
+            `Attendee: ${studentName}`,
+            `Student ID: ${studentId}`,
+            `Email: ${studentEmail}`,
+            `Pass ID: PASS-${regCode}`,
+            `Type: ${teamName}`,
+            `Status: ${(reg.status || 'confirmed').toUpperCase()}`,
+            `Venue: ${venue}`,
+            `Date: ${eventDate}`
+          ].join('\n');
+
+          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=4&data=${encodeURIComponent(qrData)}`;
 
           return `
             <div class="ticket-pass">
@@ -174,31 +259,35 @@
 
               <div class="ticket-main">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                  <span class="badge badge-purple">${escapeHtml(reg.club_name || 'University Club')}</span>
+                  <span class="badge badge-purple">${escapeHtml(clubName)}</span>
                   <span class="badge ${reg.status === 'confirmed' ? 'badge-emerald' : 'badge-amber'}">${escapeHtml(reg.status || 'Confirmed')}</span>
                 </div>
 
                 <h3 style="font-size:1.45rem; font-weight:800; margin-bottom:0.6rem;">
-                  <a href="event-detail.html?id=${reg.event_id}" style="color:var(--text-main);">${escapeHtml(reg.event_title || 'Campus Event')}</a>
+                  <a href="event-detail.html?id=${reg.event_id}" style="color:var(--text-main);">${escapeHtml(eventName)}</a>
                 </h3>
 
                 <div style="display:flex; flex-wrap:wrap; gap:1.5rem; font-size:0.88rem; color:var(--text-muted); margin-bottom:1rem;">
                   <div>📅 <strong>${eventDate}</strong> at ${eventTime}</div>
-                  <div>📍 <strong>${escapeHtml(reg.venue || 'Campus Auditorium')}</strong></div>
-                  ${reg.team_name ? `<div>👥 Team: <strong>${escapeHtml(reg.team_name)}</strong></div>` : '<div>👤 Individual Pass</div>'}
+                  <div>📍 <strong>${escapeHtml(venue)}</strong></div>
+                  <div>👤 <strong>${escapeHtml(studentName)}</strong> <span style="font-family:var(--font-mono); color:var(--accent-cyan);">(${escapeHtml(studentId)})</span></div>
+                  ${reg.team_name ? `<div>👥 <strong>${escapeHtml(teamName)}</strong></div>` : ''}
                 </div>
 
-                <div style="font-size:0.8rem; color:var(--text-dim);">
-                  Registered on: ${new Date(reg.created_at).toLocaleDateString('en-US')}
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; font-size:0.8rem; color:var(--text-dim);">
+                  <span>Registered on: ${new Date(reg.created_at).toLocaleDateString('en-US')}</span>
+                  <button type="button" class="btn btn-xs btn-glass" onclick="openPassModal(${idx})">
+                    📱 View &amp; Scan Full Pass
+                  </button>
                 </div>
               </div>
 
-              <div class="ticket-stub">
-                <div class="ticket-qr">
-                  ${qrSvg}
+              <div class="ticket-stub" onclick="openPassModal(${idx})" style="cursor:pointer;" title="Click to enlarge pass and scan QR code">
+                <div class="ticket-qr" style="width:104px; height:104px; padding:4px; background:#ffffff; border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+                  <img src="${qrUrl}" alt="Pass QR" width="94" height="94" style="display:block; border-radius:4px;" loading="lazy">
                 </div>
                 <div class="ticket-code">PASS: ${regCode}</div>
-                <div style="font-size:0.7rem; color:var(--text-dim); margin-top:0.25rem;">Show at Entrance Gate</div>
+                <div style="font-size:0.68rem; color:var(--text-dim); margin-top:0.25rem;">🔍 Click to Scan</div>
               </div>
             </div>
           `;
@@ -214,30 +303,57 @@
       }
     }
 
-    function generateSimpleQRCodeSVG(code) {
-      // Clean modern geometric QR placeholder svg
-      return `
-        <svg width="86" height="86" viewBox="0 0 100 100" fill="#070913">
-          <rect width="100" height="100" fill="#ffffff" />
-          <rect x="10" y="10" width="25" height="25" />
-          <rect x="15" y="15" width="15" height="15" fill="#ffffff" />
-          <rect x="18" y="18" width="9" height="9" />
-          <rect x="65" y="10" width="25" height="25" />
-          <rect x="70" y="15" width="15" height="15" fill="#ffffff" />
-          <rect x="73" y="18" width="9" height="9" />
-          <rect x="10" y="65" width="25" height="25" />
-          <rect x="15" y="70" width="15" height="15" fill="#ffffff" />
-          <rect x="18" y="73" width="9" height="9" />
-          <rect x="45" y="10" width="10" height="10" />
-          <rect x="45" y="30" width="10" height="20" />
-          <rect x="20" y="45" width="20" height="10" />
-          <rect x="55" y="45" width="15" height="15" />
-          <rect x="75" y="45" width="15" height="10" />
-          <rect x="45" y="65" width="10" height="25" />
-          <rect x="65" y="65" width="25" height="10" />
-          <rect x="65" y="80" width="15" height="10" />
-        </svg>
-      `;
+    function openPassModal(idx) {
+      const reg = myRegistrations[idx];
+      if (!reg) return;
+
+      const user = window.api.getUser() || {};
+      const rawDate = reg.event_date || reg.event_start_time || reg.start_time || reg.created_at;
+      const eventDate = new Date(rawDate).toLocaleDateString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+      });
+      const regCode = (reg.id || 'PASS').substring(0, 8).toUpperCase();
+      const studentName = reg.student_name || user.name || (user.email ? user.email.split('@')[0] : 'Attendee');
+      const studentId = reg.student_reg_no || reg.student_id || user.student_id || user.registration_number || 'N/A';
+      const studentEmail = reg.student_email || reg.email || user.email || 'N/A';
+      const eventName = reg.event_name || reg.event_title || 'Campus Event';
+      const clubName = reg.club_name || 'University Club';
+      const venue = reg.venue || 'Campus Auditorium';
+      const teamName = reg.team_name ? `Team: ${reg.team_name}` : 'Individual Attendee Pass';
+
+      const qrData = [
+        `🎓 EVENTRA CAMPUS PASS`,
+        `Event: ${eventName}`,
+        `Club: ${clubName}`,
+        `Attendee: ${studentName}`,
+        `Student ID: ${studentId}`,
+        `Email: ${studentEmail}`,
+        `Pass ID: PASS-${regCode}`,
+        `Type: ${teamName}`,
+        `Status: ${(reg.status || 'confirmed').toUpperCase()}`,
+        `Venue: ${venue}`,
+        `Date: ${eventDate}`
+      ].join('\n');
+
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=6&data=${encodeURIComponent(qrData)}`;
+
+      document.getElementById('modal-pass-club').innerText = clubName;
+      document.getElementById('modal-pass-event').innerText = eventName;
+      document.getElementById('modal-pass-type').innerText = teamName;
+      document.getElementById('modal-pass-qr-img').src = qrUrl;
+      document.getElementById('modal-pass-code').innerText = `PASS: ${regCode}`;
+      document.getElementById('modal-pass-student').innerText = studentName;
+      document.getElementById('modal-pass-id').innerText = studentId;
+      document.getElementById('modal-pass-email').innerText = studentEmail;
+      document.getElementById('modal-pass-status').innerText = (reg.status || 'CONFIRMED').toUpperCase();
+      document.getElementById('modal-pass-venue').innerText = venue;
+      document.getElementById('modal-pass-date').innerText = eventDate;
+
+      document.getElementById('ticket-modal').classList.add('active');
+    }
+
+    function closeTicketModal() {
+      document.getElementById('ticket-modal').classList.remove('active');
     }
   </script>
 </body>

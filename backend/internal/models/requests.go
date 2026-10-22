@@ -121,13 +121,16 @@ type ExtendDeadlineRequest struct {
 // CreateRegistrationRequest for individual registration
 type CreateRegistrationRequest struct {
 	CustomFieldsData map[string]interface{} `json:"custom_fields_data"`
+	CustomData       map[string]interface{} `json:"custom_data"`
 }
 
 // CreateGroupRegistrationRequest for group registration
 type CreateGroupRegistrationRequest struct {
 	GroupName        string                 `json:"group_name"`
+	TeamName         string                 `json:"team_name"`
 	Members          []GroupMemberRequest   `json:"members"`
 	CustomFieldsData map[string]interface{} `json:"custom_fields_data"`
+	CustomData       map[string]interface{} `json:"custom_data"`
 }
 
 // GroupMemberRequest for adding group members

@@ -457,12 +457,15 @@
           });
 
           await window.api.post(`/events/${currentEvent.id}/register-group`, {
+            group_name: teamName,
             team_name: teamName,
-            members: members,
+            members: members.map(m => (typeof m === 'string' ? { member_name: m } : m)),
+            custom_fields_data: customData,
             custom_data: customData
           });
         } else {
           await window.api.post(`/events/${currentEvent.id}/register`, {
+            custom_fields_data: customData,
             custom_data: customData
           });
         }

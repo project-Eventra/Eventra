@@ -489,6 +489,7 @@ func (h *AdminHandler) GetEventRegistrations(w http.ResponseWriter, r *http.Requ
 			PageSize:   pageSize,
 			TotalPages: totalPages,
 		},
+		"items":  regs,
 		"groups": groups,
 	})
 }

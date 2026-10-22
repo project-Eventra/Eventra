@@ -446,6 +446,18 @@ func (h *ClubAdminHandler) GetEventRegistrations(w http.ResponseWriter, r *http.
 	// Also get group registrations
 	groups, _ := h.regRepo.GetGroupsByEventID(r.Context(), eventID)
 
+	// Also get custom questions defined for this event
+	customFields, _ := h.eventRepo.GetCustomFields(r.Context(), eventID)
+	if customFields == nil {
+		customFields = []models.EventCustomField{}
+	}
+	for i := range customFields {
+		customFields[i].Label = customFields[i].FieldName
+		customFields[i].Name = customFields[i].FieldName
+		customFields[i].Type = customFields[i].FieldType
+		customFields[i].Required = customFields[i].IsRequired
+	}
+
 	totalPages := (total + pageSize - 1) / pageSize
 	writeSuccess(w, "", map[string]interface{}{
 		"registrations": models.PaginatedResponse{
@@ -455,7 +467,10 @@ func (h *ClubAdminHandler) GetEventRegistrations(w http.ResponseWriter, r *http.
 			PageSize:   pageSize,
 			TotalPages: totalPages,
 		},
-		"groups": groups,
+		"items":         regs,
+		"groups":        groups,
+		"custom_fields": customFields,
+		"event":         event,
 	})
 }
 

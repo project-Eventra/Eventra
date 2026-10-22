@@ -203,9 +203,14 @@ func (h *EventHandler) RegisterForEvent(w http.ResponseWriter, r *http.Request) 
 		req = models.CreateRegistrationRequest{}
 	}
 
+	fields := req.CustomFieldsData
+	if fields == nil {
+		fields = req.CustomData
+	}
+
 	var customData *string
-	if req.CustomFieldsData != nil && len(req.CustomFieldsData) > 0 {
-		b, _ := json.Marshal(req.CustomFieldsData)
+	if fields != nil && len(fields) > 0 {
+		b, _ := json.Marshal(fields)
 		s := string(b)
 		customData = &s
 	}
@@ -251,6 +256,10 @@ func (h *EventHandler) RegisterGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.GroupName == "" && req.TeamName != "" {
+		req.GroupName = req.TeamName
+	}
+
 	v := validation.New()
 	v.Required("group_name", req.GroupName)
 	v.Min("members", len(req.Members), 1)
@@ -288,9 +297,13 @@ func (h *EventHandler) RegisterGroup(w http.ResponseWriter, r *http.Request) {
 		members = append(members, member)
 	}
 
+	groupFields := req.CustomFieldsData
+	if groupFields == nil {
+		groupFields = req.CustomData
+	}
 	var customData *string
-	if req.CustomFieldsData != nil {
-		b, _ := json.Marshal(req.CustomFieldsData)
+	if groupFields != nil && len(groupFields) > 0 {
+		b, _ := json.Marshal(groupFields)
 		s := string(b)
 		customData = &s
 	}

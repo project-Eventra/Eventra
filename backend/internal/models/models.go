@@ -127,6 +127,11 @@ type Registration struct {
 	StudentName  string     `json:"student_name,omitempty"`
 	StudentRegNo string     `json:"student_reg_no,omitempty"`
 	StudentEmail string     `json:"student_email,omitempty"`
+	StudentID    string     `json:"student_id,omitempty"`
+	Email        string     `json:"email,omitempty"`
+	TeamName     string     `json:"team_name,omitempty"`
+	Department   string     `json:"department,omitempty"`
+	Phone        string     `json:"phone,omitempty"`
 }
 
 // RegistrationGroup represents a group registration

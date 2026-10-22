@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"strings"
 	"sync"
@@ -718,42 +719,179 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 	})
 
 	// Event Register Protected
-	r.With(middleware.AuthMiddleware(authManager)).Post("/events/{id}/register", func(w http.ResponseWriter, r *http.Request) {
-		claims := middleware.GetClaims(r.Context())
-		uID, _ := uuid.Parse(claims.UserID)
-		eID, _ := uuid.Parse(chi.URLParam(r, "id"))
+	r.Route("/events/{id}", func(eventRouter chi.Router) {
+		eventRouter.Use(middleware.AuthMiddleware(authManager))
 
-		store.mu.Lock()
-		defer store.mu.Unlock()
+		eventRouter.Post("/register", func(w http.ResponseWriter, r *http.Request) {
+			claims := middleware.GetClaims(r.Context())
+			uID, _ := uuid.Parse(claims.UserID)
+			eID, _ := uuid.Parse(chi.URLParam(r, "id"))
 
-		ev, ok := store.events[eID]
-		if !ok {
-			writeError(w, http.StatusNotFound, "Event not found")
-			return
-		}
+			var req models.CreateRegistrationRequest
+			decodeJSON(r, &req)
 
-		newRID := uuid.New()
-		venue := "Campus Auditorium"
-		if ev.Venue != nil {
-			venue = *ev.Venue
-		}
+			fields := req.CustomFieldsData
+			if fields == nil {
+				fields = req.CustomData
+			}
+			var customData *string
+			if fields != nil && len(fields) > 0 {
+				b, _ := json.Marshal(fields)
+				s := string(b)
+				customData = &s
+			}
 
-		store.registrations[newRID] = &models.Registration{
-			ID:               newRID,
-			EventID:          eID,
-			UserID:           uID,
-			EventName:        ev.Name,
-			ClubName:         ev.ClubName,
-			Venue:            venue,
-			RegistrationType: "individual",
-			Status:           "confirmed",
-			CreatedAt:        time.Now(),
-		}
-		ev.RegistrationCount++
+			store.mu.Lock()
+			defer store.mu.Unlock()
 
-		writeSuccess(w, "Registration confirmed", map[string]interface{}{
-			"registration_id": newRID,
-			"status":          "confirmed",
+			ev, ok := store.events[eID]
+			if !ok {
+				writeError(w, http.StatusNotFound, "Event not found")
+				return
+			}
+
+			newRID := uuid.New()
+			venue := "Campus Auditorium"
+			if ev.Venue != nil {
+				venue = *ev.Venue
+			}
+
+			studentName := claims.Email
+			studentRegNo := "STU-" + newRID.String()[:8]
+			department := "Campus Department"
+			phone := ""
+			if st, exists := store.students[uID]; exists {
+				studentName = strings.TrimSpace(st.FirstName + " " + st.LastName)
+				if studentName == "" {
+					studentName = claims.Email
+				}
+				if st.RegistrationNumber != "" {
+					studentRegNo = st.RegistrationNumber
+				}
+				department = st.Department
+				if st.Phone != nil {
+					phone = *st.Phone
+				}
+			}
+
+			reg := &models.Registration{
+				ID:               newRID,
+				EventID:          eID,
+				UserID:           uID,
+				EventName:        ev.Name,
+				ClubName:         ev.ClubName,
+				Venue:            venue,
+				RegistrationType: "individual",
+				Status:           "confirmed",
+				CustomFieldsData: customData,
+				StudentName:      studentName,
+				StudentRegNo:     studentRegNo,
+				StudentID:        studentRegNo,
+				StudentEmail:     claims.Email,
+				Email:            claims.Email,
+				Department:       department,
+				Phone:            phone,
+				CreatedAt:        time.Now(),
+			}
+
+			store.registrations[newRID] = reg
+			ev.RegistrationCount++
+
+			writeSuccess(w, "Registration confirmed", map[string]interface{}{
+				"registration_id": newRID,
+				"status":          "confirmed",
+			})
+		})
+
+		eventRouter.Post("/register-group", func(w http.ResponseWriter, r *http.Request) {
+			claims := middleware.GetClaims(r.Context())
+			uID, _ := uuid.Parse(claims.UserID)
+			eID, _ := uuid.Parse(chi.URLParam(r, "id"))
+
+			var req models.CreateGroupRegistrationRequest
+			decodeJSON(r, &req)
+
+			teamName := req.GroupName
+			if teamName == "" {
+				teamName = req.TeamName
+			}
+			if teamName == "" {
+				teamName = "Team " + uuid.New().String()[:6]
+			}
+
+			fields := req.CustomFieldsData
+			if fields == nil {
+				fields = req.CustomData
+			}
+			var customData *string
+			if fields != nil && len(fields) > 0 {
+				b, _ := json.Marshal(fields)
+				s := string(b)
+				customData = &s
+			}
+
+			store.mu.Lock()
+			defer store.mu.Unlock()
+
+			ev, ok := store.events[eID]
+			if !ok {
+				writeError(w, http.StatusNotFound, "Event not found")
+				return
+			}
+
+			newRID := uuid.New()
+			venue := "Campus Auditorium"
+			if ev.Venue != nil {
+				venue = *ev.Venue
+			}
+
+			studentName := claims.Email
+			studentRegNo := "STU-" + newRID.String()[:8]
+			department := "Campus Department"
+			phone := ""
+			if st, exists := store.students[uID]; exists {
+				studentName = strings.TrimSpace(st.FirstName + " " + st.LastName)
+				if studentName == "" {
+					studentName = claims.Email
+				}
+				if st.RegistrationNumber != "" {
+					studentRegNo = st.RegistrationNumber
+				}
+				department = st.Department
+				if st.Phone != nil {
+					phone = *st.Phone
+				}
+			}
+
+			reg := &models.Registration{
+				ID:               newRID,
+				EventID:          eID,
+				UserID:           uID,
+				EventName:        ev.Name,
+				ClubName:         ev.ClubName,
+				Venue:            venue,
+				RegistrationType: "group",
+				TeamName:         teamName,
+				Status:           "confirmed",
+				CustomFieldsData: customData,
+				StudentName:      studentName,
+				StudentRegNo:     studentRegNo,
+				StudentID:        studentRegNo,
+				StudentEmail:     claims.Email,
+				Email:            claims.Email,
+				Department:       department,
+				Phone:            phone,
+				CreatedAt:        time.Now(),
+			}
+
+			store.registrations[newRID] = reg
+			ev.RegistrationCount++
+
+			writeSuccess(w, "Group registration confirmed", map[string]interface{}{
+				"registration_id": newRID,
+				"team_name":       teamName,
+				"status":          "confirmed",
+			})
 		})
 	})
 
@@ -781,6 +919,76 @@ func RegisterDemoRoutes(r chi.Router, authManager *auth.Manager, cfg *config.Con
 			store.mu.Unlock()
 
 			writeCreated(w, "Event published", ev)
+		})
+		ca.Get("/events/{id}/registrations", func(w http.ResponseWriter, r *http.Request) {
+			eID, err := uuid.Parse(chi.URLParam(r, "id"))
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid event ID")
+				return
+			}
+			store.mu.RLock()
+			ev := store.events[eID]
+			var list []models.Registration
+			for _, reg := range store.registrations {
+				if reg.EventID == eID {
+					list = append(list, *reg)
+				}
+			}
+			store.mu.RUnlock()
+
+			var cFields []models.EventCustomField
+			if ev != nil && ev.CustomFields != nil {
+				cFields = ev.CustomFields
+			} else {
+				cFields = []models.EventCustomField{}
+			}
+
+			writeSuccess(w, "", map[string]interface{}{
+				"registrations": models.PaginatedResponse{
+					Items:      list,
+					Total:      len(list),
+					Page:       1,
+					PageSize:   50,
+					TotalPages: 1,
+				},
+				"items":         list,
+				"groups":        []interface{}{},
+				"custom_fields": cFields,
+				"event":         ev,
+			})
+		})
+		ca.Post("/events/{id}/extend-deadline", func(w http.ResponseWriter, r *http.Request) {
+			eID, err := uuid.Parse(chi.URLParam(r, "id"))
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid event ID")
+				return
+			}
+			var req models.ExtendDeadlineRequest
+			decodeJSON(r, &req)
+
+			store.mu.Lock()
+			ev, ok := store.events[eID]
+			if ok && req.NewDeadline != "" {
+				t, parseErr := time.Parse(time.RFC3339, req.NewDeadline)
+				if parseErr == nil {
+					ev.RegistrationDeadline = t
+				}
+			}
+			store.mu.Unlock()
+
+			writeSuccess(w, "Deadline extended successfully", nil)
+		})
+		ca.Delete("/events/{id}", func(w http.ResponseWriter, r *http.Request) {
+			eID, err := uuid.Parse(chi.URLParam(r, "id"))
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "Invalid event ID")
+				return
+			}
+			store.mu.Lock()
+			delete(store.events, eID)
+			store.mu.Unlock()
+
+			writeSuccess(w, "Event deleted", nil)
 		})
 	})
 

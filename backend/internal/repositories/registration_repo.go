@@ -237,23 +237,37 @@ func (r *RegistrationRepository) CreateGroup(ctx context.Context, group *models.
 func (r *RegistrationRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.Registration, error) {
 	query := `
 		SELECT r.id, r.event_id, r.user_id, r.registration_type, r.group_id, r.status, r.custom_fields_data, r.created_at, r.updated_at,
-			e.name as event_name, c.name as club_name, e.event_date, e.registration_deadline
+			e.name as event_name, c.name as club_name, e.event_date, e.registration_deadline,
+			COALESCE(e.venue, 'Campus') as venue,
+			COALESCE(NULLIF(TRIM(sp.first_name || ' ' || sp.last_name), ''), u.email) as student_name,
+			COALESCE(sp.registration_number, '') as student_reg_no,
+			u.email as student_email,
+			COALESCE(rg.group_name, '') as team_name,
+			COALESCE(sp.department, '') as department,
+			COALESCE(sp.phone, '') as phone
 		FROM registrations r
 		JOIN events e ON e.id = r.event_id
 		JOIN clubs c ON c.id = e.club_id
+		JOIN users u ON u.id = r.user_id
+		LEFT JOIN student_profiles sp ON sp.user_id = r.user_id
+		LEFT JOIN registration_groups rg ON rg.id = r.group_id
 		WHERE r.id = $1`
 
 	reg := &models.Registration{}
 	err := r.pool.QueryRow(ctx, query, id).Scan(
 		&reg.ID, &reg.EventID, &reg.UserID, &reg.RegistrationType, &reg.GroupID,
 		&reg.Status, &reg.CustomFieldsData, &reg.CreatedAt, &reg.UpdatedAt,
-		&reg.EventName, &reg.ClubName, &reg.EventDate, &reg.Deadline)
+		&reg.EventName, &reg.ClubName, &reg.EventDate, &reg.Deadline,
+		&reg.Venue, &reg.StudentName, &reg.StudentRegNo, &reg.StudentEmail,
+		&reg.TeamName, &reg.Department, &reg.Phone)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("error getting registration: %w", err)
 	}
+	reg.StudentID = reg.StudentRegNo
+	reg.Email = reg.StudentEmail
 	return reg, nil
 }
 
@@ -261,10 +275,18 @@ func (r *RegistrationRepository) GetByID(ctx context.Context, id uuid.UUID) (*mo
 func (r *RegistrationRepository) GetByUserID(ctx context.Context, userID uuid.UUID) ([]models.Registration, error) {
 	query := `
 		SELECT r.id, r.event_id, r.user_id, r.registration_type, r.group_id, r.status, r.custom_fields_data, r.created_at, r.updated_at,
-			e.name as event_name, c.name as club_name, e.event_date, e.registration_deadline
+			e.name as event_name, c.name as club_name, e.event_date, e.registration_deadline,
+			COALESCE(e.venue, 'Campus') as venue,
+			COALESCE(NULLIF(TRIM(sp.first_name || ' ' || sp.last_name), ''), u.email) as student_name,
+			COALESCE(sp.registration_number, '') as student_reg_no,
+			u.email as student_email,
+			COALESCE(rg.group_name, '') as team_name
 		FROM registrations r
 		JOIN events e ON e.id = r.event_id
 		JOIN clubs c ON c.id = e.club_id
+		JOIN users u ON u.id = r.user_id
+		LEFT JOIN student_profiles sp ON sp.user_id = r.user_id
+		LEFT JOIN registration_groups rg ON rg.id = r.group_id
 		WHERE r.user_id = $1
 		ORDER BY r.created_at DESC`
 
@@ -280,10 +302,14 @@ func (r *RegistrationRepository) GetByUserID(ctx context.Context, userID uuid.UU
 		err := rows.Scan(
 			&reg.ID, &reg.EventID, &reg.UserID, &reg.RegistrationType, &reg.GroupID,
 			&reg.Status, &reg.CustomFieldsData, &reg.CreatedAt, &reg.UpdatedAt,
-			&reg.EventName, &reg.ClubName, &reg.EventDate, &reg.Deadline)
+			&reg.EventName, &reg.ClubName, &reg.EventDate, &reg.Deadline,
+			&reg.Venue, &reg.StudentName, &reg.StudentRegNo, &reg.StudentEmail,
+			&reg.TeamName)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning registration: %w", err)
 		}
+		reg.StudentID = reg.StudentRegNo
+		reg.Email = reg.StudentEmail
 		regs = append(regs, reg)
 	}
 
@@ -304,12 +330,16 @@ func (r *RegistrationRepository) GetByEventID(ctx context.Context, eventID uuid.
 
 	query := `
 		SELECT r.id, r.event_id, r.user_id, r.registration_type, r.group_id, r.status, r.custom_fields_data, r.created_at, r.updated_at,
-			COALESCE(sp.first_name || ' ' || sp.last_name, u.email) as student_name,
+			COALESCE(NULLIF(TRIM(sp.first_name || ' ' || sp.last_name), ''), u.email) as student_name,
 			COALESCE(sp.registration_number, '') as student_reg_no,
-			u.email as student_email
+			u.email as student_email,
+			COALESCE(rg.group_name, '') as team_name,
+			COALESCE(sp.department, '') as department,
+			COALESCE(sp.phone, '') as phone
 		FROM registrations r
 		JOIN users u ON u.id = r.user_id
 		LEFT JOIN student_profiles sp ON sp.user_id = r.user_id
+		LEFT JOIN registration_groups rg ON rg.id = r.group_id
 		WHERE r.event_id = $1 AND r.status != 'cancelled'
 		ORDER BY r.created_at DESC
 		LIMIT $2 OFFSET $3`
@@ -326,10 +356,13 @@ func (r *RegistrationRepository) GetByEventID(ctx context.Context, eventID uuid.
 		err := rows.Scan(
 			&reg.ID, &reg.EventID, &reg.UserID, &reg.RegistrationType, &reg.GroupID,
 			&reg.Status, &reg.CustomFieldsData, &reg.CreatedAt, &reg.UpdatedAt,
-			&reg.StudentName, &reg.StudentRegNo, &reg.StudentEmail)
+			&reg.StudentName, &reg.StudentRegNo, &reg.StudentEmail,
+			&reg.TeamName, &reg.Department, &reg.Phone)
 		if err != nil {
 			return nil, 0, fmt.Errorf("error scanning registration: %w", err)
 		}
+		reg.StudentID = reg.StudentRegNo
+		reg.Email = reg.StudentEmail
 		regs = append(regs, reg)
 	}
 
