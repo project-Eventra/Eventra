@@ -83,11 +83,12 @@ type Event struct {
 	CreatedAt            time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt            time.Time `json:"updated_at" db:"updated_at"`
 	// Computed/joined fields
-	ClubName          string `json:"club_name,omitempty" db:"club_name"`
-	Category          string `json:"category,omitempty"`
-	RegistrationCount int    `json:"registration_count" db:"registration_count"`
-	GroupCount        int    `json:"group_count,omitempty" db:"group_count"`
-	IsRegistered      bool   `json:"is_registered,omitempty"`
+	ClubName          string             `json:"club_name,omitempty" db:"club_name"`
+	Category          string             `json:"category,omitempty"`
+	RegistrationCount int                `json:"registration_count" db:"registration_count"`
+	GroupCount        int                `json:"group_count,omitempty" db:"group_count"`
+	IsRegistered      bool               `json:"is_registered,omitempty"`
+	CustomFields      []EventCustomField `json:"custom_fields,omitempty"`
 }
 
 // EventCustomField represents a custom registration question
@@ -95,9 +96,13 @@ type EventCustomField struct {
 	ID           uuid.UUID `json:"id" db:"id"`
 	EventID      uuid.UUID `json:"event_id" db:"event_id"`
 	FieldName    string    `json:"field_name" db:"field_name"`
+	Label        string    `json:"label,omitempty"`
+	Name         string    `json:"name,omitempty"`
 	FieldType    string    `json:"field_type" db:"field_type"`
+	Type         string    `json:"type,omitempty"`
 	FieldOptions *string   `json:"field_options,omitempty" db:"field_options"`
 	IsRequired   bool      `json:"is_required" db:"is_required"`
+	Required     bool      `json:"required,omitempty"`
 	SortOrder    int       `json:"sort_order" db:"sort_order"`
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 }

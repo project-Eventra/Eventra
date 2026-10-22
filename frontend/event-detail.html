@@ -229,10 +229,24 @@
     async function loadEventDetail(eventId) {
       try {
         const res = await window.api.get(`/events/${eventId}`);
-        currentEvent = res.data;
+        const data = res.data;
 
-        if (!currentEvent) {
+        if (!data) {
           throw new Error('Event not found');
+        }
+
+        // Support both nested { event: {...}, custom_fields: [...] } and flattened models
+        if (data.event) {
+          currentEvent = {
+            ...data.event,
+            ...data,
+            custom_fields: data.custom_fields || data.event.custom_fields || []
+          };
+        } else {
+          currentEvent = {
+            ...data,
+            custom_fields: data.custom_fields || []
+          };
         }
 
         renderEvent();
@@ -251,13 +265,13 @@
       document.getElementById('event-content').style.display = 'block';
 
       // Set Title & Banner
-      const title = currentEvent.title || currentEvent.name || 'Campus Event';
-      const participationType = currentEvent.registration_type || currentEvent.participation_type || 'individual';
+      const title = currentEvent.name || currentEvent.title || 'Campus Event';
+      const participationType = currentEvent.participation_type || currentEvent.registration_type || 'individual';
       document.title = `${title} — Eventra`;
       document.getElementById('detail-title').innerText = title;
       document.getElementById('detail-club-name').innerText = currentEvent.club_name || 'University Club';
       document.getElementById('detail-category-badge').innerText = currentEvent.category || 'General';
-      document.getElementById('detail-type-badge').innerText = participationType === 'group' ? 'Team Event' : 'Individual';
+      document.getElementById('detail-type-badge').innerText = (participationType === 'group' || participationType === 'both') ? 'Team Event' : 'Individual';
       
       const defaultBanner = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80';
       document.getElementById('detail-banner').src = currentEvent.banner_url || defaultBanner;
@@ -266,33 +280,42 @@
       document.getElementById('detail-description').innerText = currentEvent.description || currentEvent.short_description || 'No description provided.';
       document.getElementById('detail-venue').innerText = currentEvent.venue || 'Campus Auditorium';
 
-      const rawStart = currentEvent.start_time || currentEvent.event_date || new Date();
-      const rawEnd = currentEvent.end_time || currentEvent.event_date || new Date();
-      const startDate = new Date(rawStart);
-      const endDate = new Date(rawEnd);
-      document.getElementById('detail-start-time').innerText = startDate.toLocaleString('en-US', {
+      const rawStart = currentEvent.event_date || currentEvent.start_time;
+      const rawEnd = currentEvent.end_time || rawStart;
+      const startDate = rawStart ? new Date(rawStart) : null;
+      const endDate = rawEnd ? new Date(rawEnd) : startDate;
+      
+      document.getElementById('detail-start-time').innerText = startDate ? startDate.toLocaleString('en-US', {
         weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-      });
-      document.getElementById('detail-end-time').innerText = endDate.toLocaleString('en-US', {
+      }) : 'TBA';
+      document.getElementById('detail-end-time').innerText = endDate ? endDate.toLocaleString('en-US', {
         weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-      });
+      }) : 'TBA';
 
       // Deadline String
-      const deadline = new Date(currentEvent.registration_deadline || new Date());
-      document.getElementById('detail-deadline-str').innerText = deadline.toLocaleString('en-US', {
+      const rawDeadline = currentEvent.registration_deadline;
+      const deadline = rawDeadline ? new Date(rawDeadline) : null;
+      document.getElementById('detail-deadline-str').innerText = deadline && !isNaN(deadline.getTime()) ? deadline.toLocaleString('en-US', {
         month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-      });
+      }) : 'Open Until Event';
 
       // Capacity Bar
-      const capacity = currentEvent.max_capacity || currentEvent.max_participants || 100;
-      const current = currentEvent.current_registrations || currentEvent.registration_count || 0;
+      const capacity = currentEvent.max_participants || currentEvent.max_capacity || 100;
+      const current = currentEvent.registration_count || currentEvent.current_registrations || 0;
       const pct = Math.min(100, Math.round((current / capacity) * 100));
       document.getElementById('detail-capacity-text').innerText = `${current} / ${capacity} (${pct}%)`;
       document.getElementById('detail-capacity-bar').style.width = `${pct}%`;
 
       // Setup Live Countdown
-      updateCountdown(deadline);
-      countdownInterval = setInterval(() => updateCountdown(deadline), 1000);
+      if (countdownInterval) clearInterval(countdownInterval);
+      if (deadline && !isNaN(deadline.getTime())) {
+        updateCountdown(deadline);
+        countdownInterval = setInterval(() => updateCountdown(deadline), 1000);
+      } else {
+        const ticker = document.getElementById('detail-countdown');
+        ticker.innerText = 'Registration Open';
+        ticker.style.color = 'var(--accent-cyan)';
+      }
 
       // Determine Registration Card State
       setupRegistrationCard();
@@ -300,13 +323,18 @@
 
     function updateCountdown(deadline) {
       const ticker = document.getElementById('detail-countdown');
+      if (!deadline || isNaN(deadline.getTime())) {
+        ticker.innerText = 'Registration Open';
+        ticker.style.color = 'var(--accent-cyan)';
+        return;
+      }
       const now = new Date().getTime();
       const distance = deadline.getTime() - now;
 
       if (distance <= 0) {
         ticker.innerText = 'Registration Closed';
         ticker.style.color = 'var(--accent-rose)';
-        clearInterval(countdownInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
         return;
       }
 
@@ -316,11 +344,14 @@
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
       ticker.innerText = `${days}d : ${hours}h : ${minutes}m : ${seconds}s`;
+      ticker.style.color = 'var(--accent-cyan)';
     }
 
     function setupRegistrationCard() {
       const user = window.api.getUser();
-      const isExpired = new Date(currentEvent.registration_deadline) <= new Date();
+      const rawDeadline = currentEvent.registration_deadline;
+      const deadline = rawDeadline ? new Date(rawDeadline) : null;
+      const isExpired = deadline && !isNaN(deadline.getTime()) ? (deadline.getTime() <= Date.now()) : false;
 
       const registeredBox = document.getElementById('reg-state-registered');
       const expiredBox = document.getElementById('reg-state-expired');
@@ -353,13 +384,21 @@
       // Setup Custom Fields
       const fieldsContainer = document.getElementById('custom-fields-container');
       fieldsContainer.innerHTML = '';
-      if (Array.isArray(currentEvent.custom_fields) && currentEvent.custom_fields.length > 0) {
-        currentEvent.custom_fields.forEach(field => {
+      const customFields = currentEvent.custom_fields || [];
+      if (Array.isArray(customFields) && customFields.length > 0) {
+        customFields.forEach((field, idx) => {
+          const label = field.field_name || field.label || field.name || `Question ${idx + 1}`;
+          const fieldName = field.field_name || field.name || field.label || `field_${idx + 1}`;
+          const isRequired = !!(field.is_required || field.required);
+          const rawType = (field.field_type || field.type || 'text').toLowerCase();
+          const inputType = (rawType === 'number' || rawType === 'numeric') ? 'number' : (rawType === 'email' ? 'email' : 'text');
+          const placeholder = field.field_options || field.placeholder || 'Enter your response...';
+
           const div = document.createElement('div');
           div.className = 'form-group';
           div.innerHTML = `
-            <label class="form-label">${escapeHtml(field.label || field.name)} ${field.required ? '<span class="required">*</span>' : ''}</label>
-            <input type="${field.type || 'text'}" class="form-control custom-field-input" data-field-name="${escapeHtml(field.name)}" placeholder="${escapeHtml(field.placeholder || '')}" ${field.required ? 'required' : ''}>
+            <label class="form-label">${escapeHtml(label)} ${isRequired ? '<span class="required">*</span>' : ''}</label>
+            <input type="${inputType}" class="form-control custom-field-input" data-field-name="${escapeHtml(fieldName)}" placeholder="${escapeHtml(placeholder)}" ${isRequired ? 'required' : ''}>
           `;
           fieldsContainer.appendChild(div);
         });
@@ -367,7 +406,8 @@
 
       // Setup Group vs Individual
       const groupSection = document.getElementById('group-reg-section');
-      if (currentEvent.registration_type === 'group') {
+      const participationType = currentEvent.participation_type || currentEvent.registration_type || 'individual';
+      if (participationType === 'group') {
         groupSection.style.display = 'block';
       } else {
         groupSection.style.display = 'none';

@@ -91,10 +91,42 @@ func (h *EventHandler) GetEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	customFields, _ := h.eventRepo.GetCustomFields(r.Context(), eventID)
+	if customFields == nil {
+		customFields = []models.EventCustomField{}
+	}
+	for i := range customFields {
+		customFields[i].Label = customFields[i].FieldName
+		customFields[i].Name = customFields[i].FieldName
+		customFields[i].Type = customFields[i].FieldType
+		customFields[i].Required = customFields[i].IsRequired
+	}
+	event.CustomFields = customFields
 
 	writeSuccess(w, "", map[string]interface{}{
-		"event":         event,
-		"custom_fields": customFields,
+		"event":                 event,
+		"custom_fields":         customFields,
+		"id":                    event.ID,
+		"name":                  event.Name,
+		"title":                 event.Name,
+		"club_id":               event.ClubID,
+		"club_name":             event.ClubName,
+		"category":              event.Category,
+		"description":           event.Description,
+		"short_description":     event.ShortDescription,
+		"event_date":            event.EventDate,
+		"start_time":            event.EventDate,
+		"end_time":              event.EventDate,
+		"registration_deadline": event.RegistrationDeadline,
+		"venue":                 event.Venue,
+		"participation_type":    event.ParticipationType,
+		"registration_type":     event.ParticipationType,
+		"min_group_size":        event.MinGroupSize,
+		"max_group_size":        event.MaxGroupSize,
+		"max_participants":      event.MaxParticipants,
+		"max_capacity":          event.MaxParticipants,
+		"registration_count":    event.RegistrationCount,
+		"status":                event.Status,
+		"is_registered":         event.IsRegistered,
 	})
 }
 
