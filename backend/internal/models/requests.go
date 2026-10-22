@@ -58,28 +58,39 @@ type FirebaseAuthRequest struct {
 // CreateEventRequest for creating an event
 type CreateEventRequest struct {
 	Name                 string                     `json:"name"`
+	Title                string                     `json:"title,omitempty"`
 	ShortDescription     string                     `json:"short_description"`
 	Description          string                     `json:"description"`
 	EventDate            string                     `json:"event_date"`
+	StartTime            string                     `json:"start_time,omitempty"`
+	EndTime              string                     `json:"end_time,omitempty"`
 	RegistrationDeadline string                     `json:"registration_deadline"`
 	Venue                string                     `json:"venue"`
 	ParticipationType    string                     `json:"participation_type"`
+	RegistrationType     string                     `json:"registration_type,omitempty"`
 	MinGroupSize         int                        `json:"min_group_size"`
 	MaxGroupSize         int                        `json:"max_group_size"`
 	MaxParticipants      *int                       `json:"max_participants"`
+	MaxCapacity          *int                       `json:"max_capacity,omitempty"`
 	HasFee               bool                       `json:"has_fee"`
 	RegistrationFee      float64                    `json:"registration_fee"`
 	FeeInstructions      string                     `json:"fee_instructions"`
 	Rules                string                     `json:"rules"`
+	Category             string                     `json:"category,omitempty"`
+	BannerURL            string                     `json:"banner_url,omitempty"`
 	CustomFields         []CreateCustomFieldRequest `json:"custom_fields"`
 }
 
 // CreateCustomFieldRequest for event custom fields
 type CreateCustomFieldRequest struct {
 	FieldName    string `json:"field_name"`
+	Name         string `json:"name,omitempty"`
+	Label        string `json:"label,omitempty"`
 	FieldType    string `json:"field_type"`
+	Type         string `json:"type,omitempty"`
 	FieldOptions string `json:"field_options"`
 	IsRequired   bool   `json:"is_required"`
+	Required     bool   `json:"required,omitempty"`
 	SortOrder    int    `json:"sort_order"`
 }
 

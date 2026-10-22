@@ -189,10 +189,22 @@
 
               <div class="form-group">
                 <label class="form-label">Registration Mode <span class="required">*</span></label>
-                <select id="ev-reg-type" class="form-control" required>
+                <select id="ev-reg-type" class="form-control" onchange="toggleGroupSizeFields(this.value)" required>
                   <option value="individual">Individual Participant</option>
                   <option value="group">Team / Group Registration</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- Group Size Fields (Visible when Registration Mode is Team/Group) -->
+            <div id="ev-group-sizes" style="display: none; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+              <div class="form-group">
+                <label class="form-label">Min Team Size <span class="required">*</span></label>
+                <input type="number" id="ev-min-group" class="form-control" min="2" max="50" value="2">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Max Team Size <span class="required">*</span></label>
+                <input type="number" id="ev-max-group" class="form-control" min="2" max="50" value="5">
               </div>
             </div>
 
@@ -350,7 +362,7 @@
         // Populate Roster Dropdown
         const select = document.getElementById('roster-event-select');
         select.innerHTML = '<option value="">-- Choose Event --</option>' + 
-          clubEvents.map(e => `<option value="${e.id}">${escapeHtml(e.title)}</option>`).join('');
+          clubEvents.map(e => `<option value="${e.id}">${escapeHtml(e.name || e.title || 'Untitled Event')}</option>`).join('');
 
         if (clubEvents.length === 0) {
           tbody.innerHTML = `
@@ -365,13 +377,13 @@
 
         tbody.innerHTML = clubEvents.map(ev => {
           const isExpired = new Date(ev.registration_deadline) <= new Date();
-          const startDate = new Date(ev.start_time).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+          const startDate = new Date(ev.event_date || ev.start_time).toLocaleDateString('en-US', { month:'short', day:'numeric' });
           const deadlineDate = new Date(ev.registration_deadline).toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
           
           return `
             <tr>
               <td>
-                <div style="font-weight:700; color:var(--text-main);">${escapeHtml(ev.title)}</div>
+                <div style="font-weight:700; color:var(--text-main);">${escapeHtml(ev.name || ev.title || 'Untitled Event')}</div>
                 <div style="font-size:0.78rem; color:var(--text-dim);">${escapeHtml(ev.venue || 'Campus')}</div>
               </td>
               <td><span class="badge badge-purple">${escapeHtml(ev.category || 'General')}</span></td>
@@ -383,7 +395,7 @@
                 ${isExpired ? '<span class="badge badge-rose" style="margin-top:0.2rem;">Expired</span>' : ''}
               </td>
               <td>
-                <strong>${ev.current_registrations || 0}</strong> / ${ev.max_capacity || 100}
+                <strong>${ev.registration_count || ev.current_registrations || 0}</strong> / ${ev.max_participants || ev.max_capacity || 100}
               </td>
               <td>
                 <div class="action-buttons">
@@ -439,20 +451,47 @@
       container.appendChild(row);
     }
 
+    function toggleGroupSizeFields(val) {
+      const groupDiv = document.getElementById('ev-group-sizes');
+      if (groupDiv) groupDiv.style.display = val === 'group' ? 'grid' : 'none';
+    }
+
     async function handleCreateEventSubmit(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-create-submit');
       btn.disabled = true;
       btn.innerText = 'Publishing Event...';
 
+      const title = document.getElementById('ev-title').value.trim();
+      const venue = document.getElementById('ev-venue').value.trim();
+      const description = document.getElementById('ev-description').value.trim();
+      const shortDesc = document.getElementById('ev-short-desc')?.value.trim() || title;
+      const bannerUrl = document.getElementById('ev-banner')?.value.trim() || undefined;
+      const startVal = document.getElementById('ev-start').value;
+      const endVal = document.getElementById('ev-end')?.value || startVal;
+      const deadlineVal = document.getElementById('ev-deadline').value;
+      const capacity = parseInt(document.getElementById('ev-capacity').value) || 100;
+      const regType = document.getElementById('ev-reg-type').value || 'individual';
+      const minGroup = regType === 'group' ? (parseInt(document.getElementById('ev-min-group')?.value) || 2) : 1;
+      const maxGroup = regType === 'group' ? (parseInt(document.getElementById('ev-max-group')?.value) || 5) : 1;
+
+      const startTime = new Date(startVal).toISOString();
+      const endTime = new Date(endVal).toISOString();
+      const deadlineTime = new Date(deadlineVal).toISOString();
+
       // Gather custom fields
       const customFields = [];
-      document.querySelectorAll('.field-item-row').forEach(row => {
+      document.querySelectorAll('.field-item-row').forEach((row, idx) => {
         const label = row.querySelector('.cf-label').value.trim();
         const type = row.querySelector('.cf-type').value;
         const required = row.querySelector('.cf-required').checked;
         if (label) {
           customFields.push({
+            field_name: label,
+            field_type: type,
+            is_required: required,
+            sort_order: idx + 1,
+            // Backwards compatibility
             name: label.toLowerCase().replace(/[^a-z0-9]/g, '_'),
             label: label,
             type: type,
@@ -462,16 +501,23 @@
       });
 
       const payload = {
-        title: document.getElementById('ev-title').value.trim(),
-        category: document.getElementById('ev-category').value,
-        venue: document.getElementById('ev-venue').value.trim(),
-        description: document.getElementById('ev-description').value.trim(),
-        banner_url: document.getElementById('ev-banner').value.trim() || undefined,
-        start_time: new Date(document.getElementById('ev-start').value).toISOString(),
-        end_time: new Date(document.getElementById('ev-end').value).toISOString(),
-        registration_deadline: new Date(document.getElementById('ev-deadline').value).toISOString(),
-        max_capacity: parseInt(document.getElementById('ev-capacity').value) || 100,
-        registration_type: document.getElementById('ev-reg-type').value,
+        name: title,
+        title: title,
+        short_description: shortDesc,
+        description: description,
+        event_date: startTime,
+        start_time: startTime,
+        end_time: endTime,
+        registration_deadline: deadlineTime,
+        venue: venue,
+        participation_type: regType,
+        registration_type: regType,
+        min_group_size: minGroup,
+        max_group_size: maxGroup,
+        max_participants: capacity,
+        max_capacity: capacity,
+        category: document.getElementById('ev-category')?.value || 'tech',
+        banner_url: bannerUrl,
         custom_fields: customFields
       };
 

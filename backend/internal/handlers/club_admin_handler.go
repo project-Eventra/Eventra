@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -116,6 +117,37 @@ func (h *ClubAdminHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Support client field aliases
+	if req.Name == "" && req.Title != "" {
+		req.Name = req.Title
+	}
+	if req.EventDate == "" && req.StartTime != "" {
+		req.EventDate = req.StartTime
+	}
+	if req.ParticipationType == "" && req.RegistrationType != "" {
+		req.ParticipationType = req.RegistrationType
+	}
+	if req.ParticipationType == "" {
+		req.ParticipationType = "individual"
+	}
+	if req.MaxParticipants == nil && req.MaxCapacity != nil {
+		req.MaxParticipants = req.MaxCapacity
+	}
+	if req.ShortDescription == "" && req.Description != "" && len(req.Description) > 0 {
+		runes := []rune(req.Description)
+		if len(runes) > 120 {
+			req.ShortDescription = string(runes[:117]) + "..."
+		} else {
+			req.ShortDescription = req.Description
+		}
+	}
+	if (req.ParticipationType == "group" || req.ParticipationType == "both") && req.MinGroupSize < 2 {
+		req.MinGroupSize = 2
+	}
+	if (req.ParticipationType == "group" || req.ParticipationType == "both") && req.MaxGroupSize < req.MinGroupSize {
+		req.MaxGroupSize = 5
+	}
+
 	v := validation.New()
 	v.Required("name", req.Name).MaxLength("name", req.Name, 300)
 	v.Required("event_date", req.EventDate)
@@ -136,14 +168,14 @@ func (h *ClubAdminHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eventDate, err := time.Parse(time.RFC3339, req.EventDate)
+	eventDate, err := parseFlexibleDate(req.EventDate)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid event date format (use RFC3339)")
+		writeError(w, http.StatusBadRequest, "Invalid event date format: "+err.Error())
 		return
 	}
-	deadline, err := time.Parse(time.RFC3339, req.RegistrationDeadline)
+	deadline, err := parseFlexibleDate(req.RegistrationDeadline)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid deadline format (use RFC3339)")
+		writeError(w, http.StatusBadRequest, "Invalid deadline format: "+err.Error())
 		return
 	}
 
@@ -203,18 +235,45 @@ func (h *ClubAdminHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create custom fields
-	for _, cf := range req.CustomFields {
+	for i, cf := range req.CustomFields {
+		fieldName := cf.FieldName
+		if fieldName == "" {
+			if cf.Label != "" {
+				fieldName = cf.Label
+			} else if cf.Name != "" {
+				fieldName = cf.Name
+			}
+		}
+		if fieldName == "" {
+			continue
+		}
+
+		fieldType := cf.FieldType
+		if fieldType == "" {
+			if cf.Type != "" {
+				fieldType = cf.Type
+			} else {
+				fieldType = "text"
+			}
+		}
+
+		isRequired := cf.IsRequired || cf.Required
+		sortOrder := cf.SortOrder
+		if sortOrder == 0 {
+			sortOrder = i + 1
+		}
+
 		var opts *string
 		if cf.FieldOptions != "" {
 			opts = &cf.FieldOptions
 		}
 		field := &models.EventCustomField{
 			EventID:      event.ID,
-			FieldName:    cf.FieldName,
-			FieldType:    cf.FieldType,
+			FieldName:    fieldName,
+			FieldType:    fieldType,
 			FieldOptions: opts,
-			IsRequired:   cf.IsRequired,
-			SortOrder:    cf.SortOrder,
+			IsRequired:   isRequired,
+			SortOrder:    sortOrder,
 		}
 		h.eventRepo.CreateCustomField(r.Context(), field)
 	}
@@ -339,9 +398,9 @@ func (h *ClubAdminHandler) ExtendDeadline(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	newDeadline, err := time.Parse(time.RFC3339, req.NewDeadline)
+	newDeadline, err := parseFlexibleDate(req.NewDeadline)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid deadline format (use RFC3339)")
+		writeError(w, http.StatusBadRequest, "Invalid deadline format: "+err.Error())
 		return
 	}
 
@@ -398,4 +457,23 @@ func (h *ClubAdminHandler) GetEventRegistrations(w http.ResponseWriter, r *http.
 		},
 		"groups": groups,
 	})
+}
+
+func parseFlexibleDate(s string) (time.Time, error) {
+	formats := []string{
+		time.RFC3339,
+		time.RFC3339Nano,
+		"2006-01-02T15:04:05Z07:00",
+		"2006-01-02T15:04:05",
+		"2006-01-02T15:04",
+		"2006-01-02 15:04:05",
+		"2006-01-02 15:04",
+		"2006-01-02",
+	}
+	for _, f := range formats {
+		if t, err := time.Parse(f, s); err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("unable to parse date %q (supported: RFC3339, ISO8601)", s)
 }
